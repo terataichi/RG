@@ -73,3 +73,7 @@ PluginsIntermediate
 # Cache files for the editor to use
 DerivedDataCache
 
+/Prototype1/.vs
+/Prototype1/Content/StarterContent
+/Prototype1/Content/Developers
+/Prototype1/Content/Collections
