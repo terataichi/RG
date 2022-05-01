@@ -88,10 +88,6 @@ public:
 
 protected:
 	
-	// Server上で玉を生成する
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerOnFire();
-
 	/** Fires a projectile. */
 	void OnFire();
 
@@ -148,5 +144,30 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
+	// ここから下追加したメンバ----------------------------------------------------------------------
+
+protected:
+	// Server上で玉を生成する
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerOnFire();
+
+private:
+	// 当たり判定確認用HP
+	UPROPERTY(ReplicatedUsing = OnReq_Health)
+	int32 health_;
+
+	// health_の値がレプリケートによって変更されたとき、この関数が呼ばれる
+	UFUNCTION()
+	void OnReq_Health();
+
+public:
+	// レプリケーション変数有効かのための登録関数
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	/// <summary>
+	/// damegeの分だけhealth_を減らす
+	/// </summary>
+	/// <param name="Damege">減らす値</param>
+	void OnDameged(int32 damege);
 };
 

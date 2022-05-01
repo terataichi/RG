@@ -3,6 +3,12 @@
 #include "ServerTestProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
+#include "ServerTestCharacter.h"
+
+namespace
+{
+	constexpr int32 ATTACK = 10;
+}
 
 AServerTestProjectile::AServerTestProjectile() 
 {
@@ -41,5 +47,16 @@ void AServerTestProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 		OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
 
 		Destroy();
+	}
+
+	// 追加分--------------------------------------------------------------
+	// 自分のロールがAuthorityであるかどうか(差バープロセス上でtrue)
+	if (HasAuthority())
+	{
+		// サーバープロセス上で衝突対象がAServerTestCharacterの時HPをAttack分減らす
+		if (auto charactor = Cast<AServerTestCharacter>(OtherActor))
+		{
+			charactor->OnDameged(ATTACK);
+		}
 	}
 }

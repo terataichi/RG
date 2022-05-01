@@ -11,8 +11,14 @@
 #include "Kismet/GameplayStatics.h"
 #include "MotionControllerComponent.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
+#include <Runtime/Engine/Public/Net/UnrealNetwork.h>
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
+
+namespace
+{
+	constexpr int32 MAX_HEALTH = 100;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // AServerTestCharacter
@@ -103,8 +109,10 @@ void AServerTestCharacter::BeginPlay()
 		VR_Gun->SetHiddenInGame(true, true);
 		Mesh1P->SetHiddenInGame(false, true);
 	}
+	// 追加分----------------------------------------------------------------------------------------------------------------
 	GetCapsuleComponent()->SetHiddenInGame(false);
 	GetCapsuleComponent()->SetOwnerNoSee(true); // 本人には見えない
+	health_ = MAX_HEALTH;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -310,4 +318,38 @@ bool AServerTestCharacter::EnableTouchscreenMovement(class UInputComponent* Play
 	}
 	
 	return false;
+}
+
+void AServerTestCharacter::OnDameged(int32 damege)
+{
+	// damegeの分だけhealth_を減らす
+	// ただし下限は0とする
+	health_ = FMath::Max<int32>(health_ - damege, 0);
+}
+
+void AServerTestCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// UPROPERTY(Replicated)とこれがそろって初めて変数がレプリケーションされる
+	DOREPLIFETIME(AServerTestCharacter, health_);
+}
+
+void AServerTestCharacter::OnReq_Health()
+{
+	// health_ の値がクライアント上で変更された後に呼ばれる
+	
+	// 残りの health_ の値を画面上に表示
+
+	const FString LogString = FString::Printf(TEXT("health_:%d"), health_);
+	UKismetSystemLibrary::PrintString(GetWorld(), LogString);
+
+	if (health_ <= 0)
+	{
+		// health_が0以下ならDie!と表示
+		UKismetSystemLibrary::PrintString(GetWorld(), TEXT("Die!"));
+
+		// 死んだことをわかりやすくするためにカプセルコリジョンの表示を消す
+		GetCapsuleComponent()->SetHiddenInGame(true);
+	}
 }
