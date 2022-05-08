@@ -67,7 +67,7 @@ bool AMyPlayerController::HostSession()
 			bool bResult = Sessions->CreateSession(*UniqueNetIdptr, SESSION_NAME, *SessionSettings);
 
 			if (bResult) {
-				// DISPLAY_LOG("CreateSession: Success");
+				DISPLAY_LOG("CreateSession: Success");
 				return true;
 			}
 			else {
@@ -83,7 +83,7 @@ bool AMyPlayerController::HostSession()
 void AMyPlayerController::OnCreateSessionCompleteDelegate(FName InSessionName, bool bWasSuccessful)
 {
 	if (bWasSuccessful) {
-		UGameplayStatics::OpenLevel(this, FName(TEXT("/Content/FirstPersonCPP/Maps/FirstPersonExampleMap")), true, "listen");
+		UGameplayStatics::OpenLevel(this, FName(TEXT("/Game/FirstPersonCPP/Maps/FirstPersonExampleMap")), true, "listen");
 	}
 }
 
