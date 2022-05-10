@@ -31,7 +31,12 @@ void AMyPlayerController::Login()
 					UE_LOG_ONLINE(Warning, TEXT("CommandLine: %s"), FCommandLine::Get());
 
 					Identity->AddOnLoginCompleteDelegate_Handle(ControllerId, FOnLoginCompleteDelegate::CreateUObject(this, &AMyPlayerController::OnLoginCompleteDelegate));
-					Identity->AutoLogin(ControllerId);
+					//ログインの情報を作成
+					FOnlineAccountCredentials acountCredentials;
+					//ログインの種類を設定
+					acountCredentials.Type = "accountportal";
+
+					Identity->Login(ControllerId, acountCredentials);
 				}
 				ELoginStatus::Type status = Identity->GetLoginStatus(ControllerId);
 				DISPLAY_LOG("Login Status: %s", ELoginStatus::ToString(status));
