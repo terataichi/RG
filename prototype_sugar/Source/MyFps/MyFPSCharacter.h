@@ -1,9 +1,12 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright  notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "MyFPSProjectile.h"
 #include "MyFPSCharacter.generated.h"
 
 UCLASS()
@@ -19,6 +22,10 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// Projectile class to spawn.
+	UPROPERTY(EditAnywhere, Category = Projectile)
+	TSubclassOf<class AMyFPSProjectile> ProjectileClass;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -32,4 +39,26 @@ public:
 
 	UFUNCTION()
 	void MoveRightAndLeft(float value);
+
+	UFUNCTION()
+	void StartJump();
+
+	UFUNCTION()
+	void StopJump();
+
+	// Function that handles firing projectiles.
+	UFUNCTION()
+	void Fire();
+	
+	// FPScamera
+	UPROPERTY(VisibleAnywhere)
+	UCameraComponent* FPSCameraComponent;
+
+	// First-person mesh(arms)
+	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+	USkeletalMeshComponent* FPSMesh;
+
+	// Gun muzzle offset from the camera location.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	FVector MuzzleOffset;
 };
