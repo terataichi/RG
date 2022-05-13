@@ -2,8 +2,10 @@
 
 #pragma once
 
+#include <vector>
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "StageSpaceState.h"
 #include "StageMain.generated.h"
 
 UCLASS()
@@ -15,7 +17,6 @@ public:
 	// Sets default values for this actor's properties
 	AStageMain();
 
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -24,7 +25,19 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	FVector senterPos_;
-	FVector size_;
-	int division_;
+	UPROPERTY(EditAnywhere)
+	float rayLength_;												// レイの長さ
+
+	UPROPERTY(EditAnywhere)
+	int divisionNumMAX_;											// 分割数
+
+	UPROPERTY(EditAnywhere)
+	float dbgTime_;													// デバッグ用
+
+	FVector centerPos_;												// モデルの中心座標
+	FVector size_;													// モデル全体の大きさ
+	FVector divSize_;												// 1分割分の大きさ
+
+
+	std::vector<StageSpaceState> spaceState_;						// マスのステータス
 };
