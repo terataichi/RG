@@ -3,6 +3,8 @@
 #pragma once
 
 #include <vector>
+#include <memory>
+#include <utility>
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "StageSpaceState.h"
@@ -26,18 +28,19 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere)
-	float rayLength_;												// レイの長さ
+	float rayLength_;																	// レイの長さ
 
 	UPROPERTY(EditAnywhere)
-	int divisionNumMAX_;											// 分割数
+	int divisionNumMAX_;																// 分割数
 
 	UPROPERTY(EditAnywhere)
-	float dbgTime_;													// デバッグ用
+	float dbgTime_;																		// デバッグ用
 
-	FVector centerPos_;												// モデルの中心座標
-	FVector size_;													// モデル全体の大きさ
-	FVector divSize_;												// 1分割分の大きさ
+	FVector centerPos_;																	// モデルの中心座標
+	FVector size_;																		// モデル全体の大きさ
+	FVector divSize_;																	// 1分割分の大きさ
 
 
-	std::vector<StageSpaceState> spaceState_;						// マスのステータス
+	std::vector<std::pair<StageSpaceState, AActor*>> spaceState_;		// マスのステータスと配置オブジェクト
+
 };

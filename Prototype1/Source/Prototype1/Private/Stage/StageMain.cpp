@@ -1,8 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Stage/StageMain.h"
+#include "StageObject/TestObj.h"
 #include "Kismet/GameplayStatics.h"
 #include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
+
 
 // Sets default values
 AStageMain::AStageMain()
@@ -20,7 +22,6 @@ AStageMain::AStageMain()
 void AStageMain::BeginPlay()
 {
 	Super::BeginPlay();
-	
 
 	// 中心座標と大きさの取得
 	this->GetActorBounds(true, centerPos_, size_);
@@ -31,24 +32,10 @@ void AStageMain::BeginPlay()
 	// 分割した大きさの割り出し
 	divSize_ = size_ / static_cast<float>(divisionNumMAX_);
 
-	spaceState_.resize(divSize_.X * divSize_.Y);
-
-	int i = 0;
+	spaceState_.resize(divisionNumMAX_ * divisionNumMAX_);
 	for (auto& state : spaceState_)
 	{
-		if (i % 3 == 0)
-		{
-			state = StageSpaceState::None;
-		}
-		else if (i % 3 == 1)
-		{
-			state = StageSpaceState::NotPut;
-		}		
-		else if (i % 3 == 2)
-		{
-			state = StageSpaceState::Put;
-		}
-		i++;
+		state.first = StageSpaceState::NotPut;
 	}
 
 }
@@ -70,45 +57,65 @@ void AStageMain::Tick(float DeltaTime)
 	GetWorld()->LineTraceSingleByChannel(result, start, start + dir * rayLength_, ECollisionChannel::ECC_Visibility);
 
 	// 自分のモデルに当たってるか
-	if (result.Actor.Get() == this)
+	if (result.Actor.Get() != this)
 	{
-		// マスの特定(原点が中心なのでずらす)
-		int X = static_cast<int>((result.ImpactPoint.X + size_.X / 2.0f) / divSize_.X);
-		int Y = static_cast<int>((result.ImpactPoint.Y + size_.Y / 2.0f) / divSize_.Y);
-
-		// 範囲外参照を避けるためクランプ
-		X = FMath::Clamp(X, 0, divisionNumMAX_ - 1);
-		Y = FMath::Clamp(Y, 0, divisionNumMAX_ - 1);
-
-		//GEngine->AddOnScreenDebugMessage(-1, dbgTime_, FColor::Red, FVector2D(X, Y).ToString());
-		//GEngine->AddOnScreenDebugMessage(-1, dbgTime_, FColor::Red, result.ImpactPoint.ToString());
-		//GEngine->AddOnScreenDebugMessage(-1, dbgTime_, FColor::Red, divSize_.ToString());
-
-		FVector point = 
-		{
-			X * divSize_.X + divSize_.X / 2.0f - size_.X / 2.0f,
-			Y * divSize_.Y + divSize_.Y / 2.0f - size_.Y / 2.0f,
-			size_.Z
-		};
-
-		int num = X * Y;
-
-		FLinearColor col = FLinearColor::Red;
-
-		if (spaceState_[num] == StageSpaceState::NotPut)
-		{
-			col = FLinearColor::Blue;
-		}			
-		if (spaceState_[num] == StageSpaceState::Put)
-		{
-			col = FLinearColor::Yellow;
-		}
-
-		UKismetSystemLibrary::DrawDebugSphere(GetWorld(), point, 100.0f, 12, col, 0.0f, 3.0f);
-		UKismetSystemLibrary::DrawDebugSphere(GetWorld(), result.ImpactPoint, 30.0f, 12, col, 0.0f, 3.0f);
-		UKismetSystemLibrary::DrawDebugBox(GetWorld(), point, divSize_ / 2.0f, col);
+		return;
 	}
 
-	
+	// マスの特定(原点が中心なのでずらす)
+	int X = static_cast<int>((result.ImpactPoint.X + size_.X / 2.0f) / divSize_.X);
+	int Y = static_cast<int>((result.ImpactPoint.Y + size_.Y / 2.0f) / divSize_.Y);
+
+	// 範囲外参照を避けるためクランプ
+	X = FMath::Clamp(X, 0, divisionNumMAX_ - 1);
+	Y = FMath::Clamp(Y, 0, divisionNumMAX_ - 1);
+
+	// 配列の番号
+	int num = X * Y;
+
+	FVector point = 
+	{
+		X * divSize_.X + divSize_.X / 2.0f - size_.X / 2.0f,
+		Y * divSize_.Y + divSize_.Y / 2.0f - size_.Y / 2.0f,
+		size_.Z
+	};
+
+
+	// デバッグ用ガイド表示
+	FLinearColor col = FLinearColor::Red;
+	if (spaceState_[num].first == StageSpaceState::NotPut)
+	{
+		col = FLinearColor::Blue;
+	}			
+	if (spaceState_[num].first == StageSpaceState::Put)
+	{
+		col = FLinearColor::Green;
+	}
+
+	UKismetSystemLibrary::DrawDebugSphere(GetWorld(), result.ImpactPoint, 30.0f, 12, col, 0.0f, 3.0f);
+	UKismetSystemLibrary::DrawDebugBox(GetWorld(), point, divSize_ / 2.0f, col);
+
+
+	// クリックされたらステータス変更
+	if (spaceState_[num].first != StageSpaceState::None)
+	{
+		if (playerCtl->WasInputKeyJustPressed(EKeys::LeftMouseButton))
+		{
+			spaceState_[num].first = StageSpaceState::Put;
+
+			spaceState_[num].second = GetWorld()->SpawnActor<ATestObj>();
+			spaceState_[num].second->SetActorLocation(point);
+
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, point.ToString());
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, spaceState_[num].second->GetActorLocation().ToString());
+		}
+		if (playerCtl->WasInputKeyJustPressed(EKeys::RightMouseButton))
+		{
+			spaceState_[num].first = StageSpaceState::NotPut;
+			delete spaceState_[num].second;
+		}
+	}
+
+
 }
 
