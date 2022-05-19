@@ -27,8 +27,13 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+
+private:
 	UPROPERTY(EditAnywhere)
 	float rayLength_;																	// レイの長さ
+
+	UPROPERTY(EditInstanceOnly)
+	FVector SpaceSize_;
 
 	UPROPERTY(EditAnywhere)
 	int divisionNumMAX_;																// 分割数
@@ -41,6 +46,9 @@ public:
 	FVector divSize_;																	// 1分割分の大きさ
 
 
-	std::vector<std::pair<StageSpaceState, AActor*>> spaceState_;		// マスのステータスと配置オブジェクト
+	std::vector<std::pair<StageSpaceState, AActor*>> spaceState_;						// マスのステータスと配置オブジェクト
 
+	// 仮
+	FString path_;
+	TSubclassOf<AActor> subClass_;
 };

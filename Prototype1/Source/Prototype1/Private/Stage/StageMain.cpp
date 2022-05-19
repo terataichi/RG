@@ -38,6 +38,8 @@ void AStageMain::BeginPlay()
 		state.first = StageSpaceState::NotPut;
 	}
 
+	path_ = "/Game/Stage/BP/StageObj/MyTestObj.MyTestObj_C";							// /Content 以下のパスが /Game 以下のパスに置き換わり、コンテントブラウザーで名前が test なら test.test_C を指定する。
+	subClass_ = TSoftClassPtr<AActor>(FSoftObjectPath(*path_)).LoadSynchronous();		// 上記で設定したパスに該当するクラスを取得
 }
 
 // Called every frame
@@ -71,15 +73,14 @@ void AStageMain::Tick(float DeltaTime)
 	Y = FMath::Clamp(Y, 0, divisionNumMAX_ - 1);
 
 	// 配列の番号
-	int num = X * Y;
+	int num = Y * divisionNumMAX_ + X;
 
 	FVector point = 
 	{
 		X * divSize_.X + divSize_.X / 2.0f - size_.X / 2.0f,
 		Y * divSize_.Y + divSize_.Y / 2.0f - size_.Y / 2.0f,
-		size_.Z
+		result.ImpactPoint.Z
 	};
-
 
 	// デバッグ用ガイド表示
 	FLinearColor col = FLinearColor::Red;
@@ -95,37 +96,29 @@ void AStageMain::Tick(float DeltaTime)
 	UKismetSystemLibrary::DrawDebugSphere(GetWorld(), result.ImpactPoint, 30.0f, 12, col, 0.0f, 3.0f);
 	UKismetSystemLibrary::DrawDebugBox(GetWorld(), point, divSize_ / 2.0f, col);
 
-	//if (sc != nullptr)
-	//{
-	//	AActor* a = GetWorld()->SpawnActor<AActor>(sc); // スポーン処理
-	//	a->SetActorLocation(FVector(-600, 200, 200)); // 確認しやすいように座標を設定
-	//}
-
 	// クリックされたらステータス変更
-	if (spaceState_[num].first != StageSpaceState::None)
-	{
-		if (playerCtl->WasInputKeyJustPressed(EKeys::LeftMouseButton))
-		{
-			FString path = "/Game/Stage/BP/StageObj/MyTestObj.MyTestObj_C"; // /Content 以下のパスが /Game 以下のパスに置き換わり、コンテントブラウザーで名前が test なら test.test_C を指定する。
-			TSubclassOf<class AActor> sc = TSoftClassPtr<AActor>(FSoftObjectPath(*path)).LoadSynchronous(); // 上記で設定したパスに該当するクラスを取得
-			if (sc != nullptr)
-			{
-				spaceState_[num].first = StageSpaceState::Put;
-				//spaceState_[num].second = GetWorld()->SpawnActor<ATestObj>();
-				spaceState_[num].second = GetWorld()->SpawnActor<AActor>(sc);
-				spaceState_[num].second->SetActorLocation(point);
 
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, point.ToString());
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, spaceState_[num].second->GetActorLocation().ToString());
-			}
-		}
-		if (playerCtl->WasInputKeyJustPressed(EKeys::RightMouseButton))
+	if (spaceState_[num].first == StageSpaceState::NotPut &&
+		playerCtl->WasInputKeyJustPressed(EKeys::LeftMouseButton))
+	{
+		if (subClass_ != nullptr)
 		{
-			spaceState_[num].first = StageSpaceState::NotPut;
-			delete spaceState_[num].second;
+			spaceState_[num].first = StageSpaceState::Put;
+		
+			spaceState_[num].second = GetWorld()->SpawnActor<AActor>(subClass_);
+			spaceState_[num].second->SetActorLocation(point);
+
+			//spaceState_[num].second->SetActorScale3D(this->GetActorScale3D());
+			//spaceState_[num].second->SetActorEnableCollision(false);
 		}
 	}
-
-
+	else if (spaceState_[num].first == StageSpaceState::Put && 
+		playerCtl->WasInputKeyJustPressed(EKeys::RightMouseButton))
+	{
+		if (GetWorld()->DestroyActor(spaceState_[num].second))
+		{
+			spaceState_[num].first = StageSpaceState::NotPut;
+		}
+	}
 }
 
