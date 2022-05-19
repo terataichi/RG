@@ -95,19 +95,29 @@ void AStageMain::Tick(float DeltaTime)
 	UKismetSystemLibrary::DrawDebugSphere(GetWorld(), result.ImpactPoint, 30.0f, 12, col, 0.0f, 3.0f);
 	UKismetSystemLibrary::DrawDebugBox(GetWorld(), point, divSize_ / 2.0f, col);
 
+	//if (sc != nullptr)
+	//{
+	//	AActor* a = GetWorld()->SpawnActor<AActor>(sc); // スポーン処理
+	//	a->SetActorLocation(FVector(-600, 200, 200)); // 確認しやすいように座標を設定
+	//}
 
 	// クリックされたらステータス変更
 	if (spaceState_[num].first != StageSpaceState::None)
 	{
 		if (playerCtl->WasInputKeyJustPressed(EKeys::LeftMouseButton))
 		{
-			spaceState_[num].first = StageSpaceState::Put;
+			FString path = "/Game/Stage/BP/StageObj/MyTestObj.MyTestObj_C"; // /Content 以下のパスが /Game 以下のパスに置き換わり、コンテントブラウザーで名前が test なら test.test_C を指定する。
+			TSubclassOf<class AActor> sc = TSoftClassPtr<AActor>(FSoftObjectPath(*path)).LoadSynchronous(); // 上記で設定したパスに該当するクラスを取得
+			if (sc != nullptr)
+			{
+				spaceState_[num].first = StageSpaceState::Put;
+				//spaceState_[num].second = GetWorld()->SpawnActor<ATestObj>();
+				spaceState_[num].second = GetWorld()->SpawnActor<AActor>(sc);
+				spaceState_[num].second->SetActorLocation(point);
 
-			spaceState_[num].second = GetWorld()->SpawnActor<ATestObj>();
-			spaceState_[num].second->SetActorLocation(point);
-
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, point.ToString());
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, spaceState_[num].second->GetActorLocation().ToString());
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, point.ToString());
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, spaceState_[num].second->GetActorLocation().ToString());
+			}
 		}
 		if (playerCtl->WasInputKeyJustPressed(EKeys::RightMouseButton))
 		{
