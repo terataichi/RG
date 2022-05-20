@@ -32,14 +32,13 @@ private:
 	UPROPERTY(EditAnywhere)
 	float rayLength_;																	// レイの長さ
 
-	UPROPERTY(EditInstanceOnly)
-	FVector SpaceSize_;
-
-	UPROPERTY(EditAnywhere)
-	int divisionNumMAX_;																// 分割数
+	UPROPERTY(EditInstanceOnly)		
+	FVector SpaceSize_;																	// １マスのサイズ
 
 	UPROPERTY(EditAnywhere)
 	float dbgTime_;																		// デバッグ用
+
+	FVector divisionNumMAX_;															// 分割数
 
 	FVector centerPos_;																	// モデルの中心座標
 	FVector size_;																		// モデル全体の大きさ

@@ -29,10 +29,12 @@ void AStageMain::BeginPlay()
 	// サイズは半分になってるので二倍にする
 	size_ *= 2.0f;
 
-	// 分割した大きさの割り出し
-	divSize_ = size_ / static_cast<float>(divisionNumMAX_);
+	divisionNumMAX_ = size_ / SpaceSize_;
 
-	spaceState_.resize(divisionNumMAX_ * divisionNumMAX_);
+	// 分割した大きさの割り出し
+	divSize_ = size_ / divisionNumMAX_;
+
+	spaceState_.resize(divisionNumMAX_.X * divisionNumMAX_.Y);
 	for (auto& state : spaceState_)
 	{
 		state.first = StageSpaceState::NotPut;
@@ -69,11 +71,11 @@ void AStageMain::Tick(float DeltaTime)
 	int Y = static_cast<int>((result.ImpactPoint.Y + size_.Y / 2.0f) / divSize_.Y);
 
 	// 範囲外参照を避けるためクランプ
-	X = FMath::Clamp(X, 0, divisionNumMAX_ - 1);
-	Y = FMath::Clamp(Y, 0, divisionNumMAX_ - 1);
+	X = FMath::Clamp(X, 0, static_cast<int>(divisionNumMAX_.X) - 1);
+	Y = FMath::Clamp(Y, 0, static_cast<int>(divisionNumMAX_.Y) - 1);
 
 	// 配列の番号
-	int num = Y * divisionNumMAX_ + X;
+	int num = Y * divisionNumMAX_.X + X;
 
 	FVector point = 
 	{
