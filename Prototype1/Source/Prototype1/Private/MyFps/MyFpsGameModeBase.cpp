@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 
-#include "MyFpsGameModeBase.h"
+#include "MyFps/MyFpsGameModeBase.h"
 
 void AMyFpsGameModeBase::StartPlay()
 {

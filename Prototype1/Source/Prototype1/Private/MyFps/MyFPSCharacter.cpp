@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "MyFPSCharacter.h"
+#include "MyFps/MyFPSCharacter.h"
 
 // Sets default values
 AMyFPSCharacter::AMyFPSCharacter()

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "MyFPSHUD.h"
+#include "MyFps/MyFPSHUD.h"
 
 void AMyFPSHUD::DrawHUD()
 {
