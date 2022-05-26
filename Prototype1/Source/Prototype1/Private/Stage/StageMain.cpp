@@ -10,7 +10,7 @@
 AStageMain::AStageMain()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Stage Create"));
 
@@ -49,26 +49,13 @@ void AStageMain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// プレイヤーコントローラーの取得
-	APlayerController* playerCtl = UGameplayStatics::GetPlayerController(this, 0);
+}
 
-	// マウスポインターの３Ｄ位置と向きの取得
-	FVector start, dir;
-	playerCtl->DeprojectMousePositionToWorld(start, dir);
-
-	// レイを飛ばす
-	FHitResult result;
-	GetWorld()->LineTraceSingleByChannel(result, start, start + dir * rayLength_, ECollisionChannel::ECC_Visibility);
-
-	// 自分のモデルに当たってるか
-	if (result.Actor.Get() != this)
-	{
-		return;
-	}
-
+void AStageMain::SpaceSpecific(const FVector& impactPoint,bool leftClick, bool rightClick)
+{
 	// マスの特定(原点が中心なのでずらす)
-	int X = static_cast<int>((result.ImpactPoint.X + size_.X / 2.0f) / divSize_.X);
-	int Y = static_cast<int>((result.ImpactPoint.Y + size_.Y / 2.0f) / divSize_.Y);
+	int X = static_cast<int>((impactPoint.X + size_.X / 2.0f) / divSize_.X);
+	int Y = static_cast<int>((impactPoint.Y + size_.Y / 2.0f) / divSize_.Y);
 
 	// 範囲外参照を避けるためクランプ
 	X = FMath::Clamp(X, 0, static_cast<int>(divisionNumMAX_.X) - 1);
@@ -77,11 +64,11 @@ void AStageMain::Tick(float DeltaTime)
 	// 配列の番号
 	int num = Y * divisionNumMAX_.X + X;
 
-	FVector point = 
+	FVector point =
 	{
 		X * divSize_.X + divSize_.X / 2.0f - size_.X / 2.0f,
 		Y * divSize_.Y + divSize_.Y / 2.0f - size_.Y / 2.0f,
-		result.ImpactPoint.Z
+		impactPoint.Z
 	};
 
 	// デバッグ用ガイド表示
@@ -89,33 +76,28 @@ void AStageMain::Tick(float DeltaTime)
 	if (spaceState_[num].first == StageSpaceState::NotPut)
 	{
 		col = FLinearColor::Blue;
-	}			
+	}
 	if (spaceState_[num].first == StageSpaceState::Put)
 	{
 		col = FLinearColor::Green;
 	}
 
-	UKismetSystemLibrary::DrawDebugSphere(GetWorld(), result.ImpactPoint, 30.0f, 12, col, 0.0f, 3.0f);
+	// デバッグ描画
+	UKismetSystemLibrary::DrawDebugSphere(GetWorld(), impactPoint, 30.0f, 12, col, 0.0f, 3.0f);
 	UKismetSystemLibrary::DrawDebugBox(GetWorld(), point, divSize_ / 2.0f, col);
 
 	// クリックされたらステータス変更
-
-	if (spaceState_[num].first == StageSpaceState::NotPut &&
-		playerCtl->WasInputKeyJustPressed(EKeys::LeftMouseButton))
+	if (spaceState_[num].first == StageSpaceState::NotPut && leftClick)
 	{
 		if (subClass_ != nullptr)
 		{
 			spaceState_[num].first = StageSpaceState::Put;
-		
+
 			spaceState_[num].second = GetWorld()->SpawnActor<AActor>(subClass_);
 			spaceState_[num].second->SetActorLocation(point);
-
-			//spaceState_[num].second->SetActorScale3D(this->GetActorScale3D());
-			//spaceState_[num].second->SetActorEnableCollision(false);
 		}
 	}
-	else if (spaceState_[num].first == StageSpaceState::Put && 
-		playerCtl->WasInputKeyJustPressed(EKeys::RightMouseButton))
+	else if (spaceState_[num].first == StageSpaceState::Put && rightClick)
 	{
 		if (GetWorld()->DestroyActor(spaceState_[num].second))
 		{

@@ -27,8 +27,18 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	/// <summary>
+	/// マスを特定する
+	/// </summary>
+	/// <param name="impactPoint">マスを置きたい座標</param>
+	/// <param name="leftClick">左クリック情報</param>
+	/// <param name="rightClick">右クリック情報</param>
+	UFUNCTION(BlueprintCallable,Category="MyF")
+	void SpaceSpecific(const FVector& impactPoint,bool leftClick, bool rightClick);
+
 
 private:
+
 	UPROPERTY(EditAnywhere)
 	float rayLength_;																	// レイの長さ
 
