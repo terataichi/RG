@@ -61,4 +61,15 @@ public:
 	// Gun muzzle offset from the camera location.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	FVector MuzzleOffset;
+
+
+	UFUNCTION()
+	bool GetHaveFlag();
+
+	UFUNCTION()
+	void SetHaveFlag(bool boolean);
+
+	// Gun muzzle offset from the camera location.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	bool HaveFlag;
 };

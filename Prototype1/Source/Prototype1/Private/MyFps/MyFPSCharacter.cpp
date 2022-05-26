@@ -138,3 +138,12 @@ void AMyFPSCharacter::Fire()
 	}
 }
 
+bool AMyFPSCharacter::GetHaveFlag()
+{
+	return HaveFlag;
+}
+void AMyFPSCharacter::SetHaveFlag(bool boolean)
+{
+	HaveFlag = boolean;
+}
+
