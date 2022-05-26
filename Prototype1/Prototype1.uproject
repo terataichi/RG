@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{94E7F1D0-4D9F-CD5F-CF83-D4938ECF54EF}",
+	"EngineAssociation": "{769F39F7-4160-B247-2C7A-91AC87F5BD76}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -14,9 +14,9 @@
 		}
 	],
 	"Plugins": [
-	    {
-	        "Name": "GameLiftServerSDK",
-	        "Enabled": true
-	    }
+		{
+			"Name": "GameLiftServerSDK",
+			"Enabled": true
+		}
 	]
 }
