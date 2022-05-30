@@ -39,13 +39,13 @@ public:
 
 private:
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Meta = (ClampMin = 1,ClampMax = 10000))
 	float rayLength_;																	// レイの長さ
 
-	UPROPERTY(EditInstanceOnly)		
+	UPROPERTY(EditAnywhere,Meta = (AllowPreserveRatio, ClampMin = 1, ClampMax = 10000))
 	FVector SpaceSize_;																	// １マスのサイズ
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Meta = (ClampMin = 0.01, ClampMax = 5))
 	float dbgTime_;																		// デバッグ用
 
 	FVector divisionNumMAX_;															// 分割数
