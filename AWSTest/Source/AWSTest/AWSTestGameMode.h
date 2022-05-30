@@ -13,6 +13,13 @@ class AAWSTestGameMode : public AGameModeBase
 
 public:
 	AAWSTestGameMode();
+	// ---------------------------------------------------------追加分-------------------------------------------------------
+private:
+	/// <summary>
+	/// AWSのGameLift関連初期化まとめ
+	/// コンストラクタで呼ぶ
+	/// </summary>
+	void GameLiftInit();
 };
 
 
