@@ -7,15 +7,13 @@
 
 
 // Sets default values
-AStageMain::AStageMain()
+AStageMain::AStageMain() :
+	rayLength_(10000.0f), dbgTime_(0.01f), SpaceSize_(10.0f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
 	//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Stage Create"));
-
-	dbgTime_ = 0.01f;
-
 }
 
 // Called when the game starts or when spawned
@@ -25,6 +23,10 @@ void AStageMain::BeginPlay()
 
 	// 中心座標と大きさの取得
 	this->GetActorBounds(true, centerPos_, size_);
+
+	rayLength_ = 10000.0f;
+
+	dbgTime_ = 0.01f;
 
 	// サイズは半分になってるので二倍にする
 	size_ *= 2.0f;
