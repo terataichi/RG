@@ -64,10 +64,10 @@ public:
 
 
 	UFUNCTION()
-	bool GetHaveFlag();
+	bool GetFlag();
 
 	UFUNCTION()
-	void SetHaveFlag(bool boolean);
+	void SetFlag(bool boolean);
 
 	// Gun muzzle offset from the camera location.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)

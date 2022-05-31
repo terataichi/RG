@@ -66,13 +66,13 @@ void AMyFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAxis("MoveRightAndLeft", this, &AMyFPSCharacter::MoveRightAndLeft);
 
 	// set up "look"
-	PlayerInputComponent->BindAxis("Turn", this, &AMyFPSCharacter::AMyFPSCharacter::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &AMyFPSCharacter::AMyFPSCharacter::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &AMyFPSCharacter::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &AMyFPSCharacter::AddControllerPitchInput);
 
 
 	// set up "action"
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this,&AMyFPSCharacter::AMyFPSCharacter::StartJump);
-	PlayerInputComponent->BindAction("LookUp", IE_Released ,this,&AMyFPSCharacter::AMyFPSCharacter::StopJump);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this,&AMyFPSCharacter::StartJump);
+	PlayerInputComponent->BindAction("LookUp", IE_Released ,this,&AMyFPSCharacter::StopJump);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMyFPSCharacter::Fire);
 }
@@ -80,13 +80,14 @@ void AMyFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 void AMyFPSCharacter::MoveForwardAndBackward(float value)
 {
 	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
-	AddMovementInput(Direction, value);
+	//AddMovementInput(Direction, value);
+	AddMovementInput(GetActorForwardVector(), value);
 }
 
 void AMyFPSCharacter::MoveRightAndLeft(float value)
 {
 	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
-	AddMovementInput(Direction, value);
+	AddMovementInput(GetActorRightVector(), value);
 }
 
 void AMyFPSCharacter::StartJump()
@@ -110,7 +111,7 @@ void AMyFPSCharacter::Fire()
 		GetActorEyesViewPoint(CameraLocation, CameraRotation);
 
 		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
-		MuzzleOffset.Set(0.0f, 0.0f, 0.0f);
+		MuzzleOffset.Set(100.0f, 0.0f,0.0f);
 
 		// Transform MuzzleOffset from camera space to world space.
 		FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
@@ -138,11 +139,11 @@ void AMyFPSCharacter::Fire()
 	}
 }
 
-bool AMyFPSCharacter::GetHaveFlag()
+bool AMyFPSCharacter::GetFlag()
 {
 	return HaveFlag;
 }
-void AMyFPSCharacter::SetHaveFlag(bool boolean)
+void AMyFPSCharacter::SetFlag(bool boolean)
 {
 	HaveFlag = boolean;
 }
