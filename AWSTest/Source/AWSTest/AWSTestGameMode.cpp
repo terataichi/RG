@@ -18,6 +18,7 @@ AAWSTestGameMode::AAWSTestGameMode()
 
 	// use our custom HUD class
 	HUDClass = AAWSTestHUD::StaticClass();
+	GameLiftInit();
 }
 
 void AAWSTestGameMode::GameLiftInit()
