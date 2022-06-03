@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in  the Description  page of Project Settings.
 
 
 #include "MyFps/MyEditerCharacter.h"
@@ -18,7 +18,6 @@ AMyEditerCharacter::AMyEditerCharacter()
 	FPSCameraComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 50.0f + BaseEyeHeight));
 	// Enable the pawn to control camera rotation
 	FPSCameraComponent->bUsePawnControlRotation = true;
-	SetActorEnableCollision(false);
 }
 
 // Called when the game starts or when spawned
@@ -27,7 +26,7 @@ void AMyEditerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	// 飛行モード
-	this->GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	//this->GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 }
 
 // Called every frame
@@ -39,14 +38,25 @@ void AMyEditerCharacter::Tick(float DeltaTime)
 
 void AMyEditerCharacter::MoveForwardAndBackward(float value)
 {
+	// 前後
+	//int deg = 180;
+	//FVector dir = FVector().RotateAngleAxis(value * deg,FPSCameraComponent->GetForwardVector());
+	
 	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
-	AddMovementInput(Direction, value);
+	Direction = (value * movescale_) * Direction;
+	SetActorLocation(GetActorLocation() + Direction);
+	//AddMovementInput(Direction, value);
 }
 
 void AMyEditerCharacter::MoveRightAndLeft(float value)
 {
+	// 左右
+	int deg = 90;
+	//FPSCameraComponent->GetForwardVector().RotateAngleAxis(value * deg);
 	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
-	AddMovementInput(Direction, value);
+	Direction = (value * movescale_) * Direction;
+	SetActorLocation(GetActorLocation() + Direction);
+	//AddMovementInput(Direction, value);
 }
 
 // Called to bind functionality to input
@@ -62,4 +72,3 @@ void AMyEditerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAxis("Turn", this, &AMyEditerCharacter::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &AMyEditerCharacter::AddControllerPitchInput);
 }
-
