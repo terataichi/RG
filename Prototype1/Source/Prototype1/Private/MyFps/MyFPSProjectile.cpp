@@ -68,6 +68,9 @@ AMyFPSProjectile::AMyFPSProjectile()
 
 	// Event called when component hits something.
 	CollisionComponent->OnComponentHit.AddDynamic(this, &AMyFPSProjectile::OnHit);
+
+	// [追加] アクターがレプリケートされるようにする
+	bReplicates = true;
 }
 
 // Called when the game starts or when spawned
