@@ -1,7 +1,7 @@
 // Fill out your copyright  notice in the Description page of Project Settings.
 
 #pragma once
-
+#include <vector>
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
@@ -46,8 +46,11 @@ public:
 	UFUNCTION()
 	void StopJump();
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerFire();
+
 	// Function that handles firing projectiles.
-	UFUNCTION()
+	//UFUNCTION()
 	void Fire();
 	
 	// FPScamera
@@ -63,13 +66,16 @@ public:
 	FVector MuzzleOffset;
 
 
-	UFUNCTION()
-	bool GetFlag();
+	//UFUNCTION()
+	//bool GetFlag();
 
-	UFUNCTION()
-	void SetFlag(bool boolean);
+	//UFUNCTION()
+	//void SetFlag(bool boolean);
 
 	// Gun muzzle offset from the camera location.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	bool HaveFlag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	TArray<AActor*> Weaponvec_;
 };

@@ -74,7 +74,7 @@ void AMyFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this,&AMyFPSCharacter::StartJump);
 	PlayerInputComponent->BindAction("LookUp", IE_Released ,this,&AMyFPSCharacter::StopJump);
 
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMyFPSCharacter::Fire);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMyFPSCharacter::ServerFire);
 }
 
 void AMyFPSCharacter::MoveForwardAndBackward(float value)
@@ -138,13 +138,13 @@ void AMyFPSCharacter::Fire()
 		}	
 	}
 }
-
-bool AMyFPSCharacter::GetFlag()
+void AMyFPSCharacter::ServerFire_Implementation()
 {
-	return HaveFlag;
-}
-void AMyFPSCharacter::SetFlag(bool boolean)
-{
-	HaveFlag = boolean;
+	// この関数はサーバープロセス上でのみ実行される
+	Fire();
 }
 
+bool AMyFPSCharacter::ServerFire_Validate()
+{
+	return true;
+}
