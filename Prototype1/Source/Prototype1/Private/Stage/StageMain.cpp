@@ -24,10 +24,6 @@ void AStageMain::BeginPlay()
 	// 中心座標と大きさの取得
 	this->GetActorBounds(true, centerPos_, size_);
 
-	rayLength_ = 10000.0f;
-
-	dbgTime_ = 0.01f;
-
 	// サイズは半分になってるので二倍にする
 	size_ *= 2.0f;
 
@@ -51,10 +47,31 @@ void AStageMain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//// プレイヤーコントローラーの取得
+	//APlayerController* playerCtl = UGameplayStatics::GetPlayerController(this, 0);
+
+	//if (!playerCtl)
+	//{
+	//	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("notPCTL"));
+	//	return;
+	//}
+
+	//left_ = playerCtl->WasInputKeyJustPressed(EKeys::LeftMouseButton);
+	//right_ = playerCtl->WasInputKeyJustPressed(EKeys::RightMouseButton);
 }
 
-void AStageMain::SpaceSpecific(const FVector& impactPoint,bool leftClick, bool rightClick)
+void AStageMain::SpaceSpecific(const int32& MyID, const FVector& impactPoint)
 {
+	// ガード処理
+	if (!playersNum_.size())
+	{
+		return;
+	}
+	if (!(0 <= MyID && MyID <= playersNum_.size() - 1))
+	{
+		return;
+	}
+
 	// マスの特定(原点が中心なのでずらす)
 	int X = static_cast<int>((impactPoint.X + size_.X / 2.0f) / divSize_.X);
 	int Y = static_cast<int>((impactPoint.Y + size_.Y / 2.0f) / divSize_.Y);
@@ -64,9 +81,11 @@ void AStageMain::SpaceSpecific(const FVector& impactPoint,bool leftClick, bool r
 	Y = FMath::Clamp(Y, 0, static_cast<int>(divisionNumMAX_.Y) - 1);
 
 	// 配列の番号
-	int num = Y * divisionNumMAX_.X + X;
+	playersNum_[MyID].first = Y * divisionNumMAX_.X + X;
 
-	FVector point =
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue,FString::FromInt(playersNum_[MyID].first));
+
+	playersNum_[MyID].second =
 	{
 		X * divSize_.X + divSize_.X / 2.0f - size_.X / 2.0f,
 		Y * divSize_.Y + divSize_.Y / 2.0f - size_.Y / 2.0f,
@@ -75,36 +94,98 @@ void AStageMain::SpaceSpecific(const FVector& impactPoint,bool leftClick, bool r
 
 	// デバッグ用ガイド表示
 	FLinearColor col = FLinearColor::Red;
-	if (spaceState_[num].first == StageSpaceState::NotPut)
+	if (spaceState_[playersNum_[MyID].first].first == StageSpaceState::NotPut)
 	{
 		col = FLinearColor::Blue;
 	}
-	if (spaceState_[num].first == StageSpaceState::Put)
+	if (spaceState_[playersNum_[MyID].first].first == StageSpaceState::Put)
 	{
 		col = FLinearColor::Green;
 	}
 
 	// デバッグ描画
-	UKismetSystemLibrary::DrawDebugSphere(GetWorld(), impactPoint, 30.0f, 12, col, 0.0f, 3.0f);
-	UKismetSystemLibrary::DrawDebugBox(GetWorld(), point, divSize_ / 2.0f, col);
+	UKismetSystemLibrary::DrawDebugSphere(GetWorld(), impactPoint, 30.0f, 12, col);
+	UKismetSystemLibrary::DrawDebugBox(GetWorld(), playersNum_[MyID].second, divSize_ / 2.0f, col);
+}
 
-	// クリックされたらステータス変更
-	if (spaceState_[num].first == StageSpaceState::NotPut && leftClick)
+void AStageMain::Reset(const int32& MyID)
+{
+	// ガード処理
+	if (!playersNum_.size())
 	{
+		return;
+	}
+	if (!(0 <= MyID && MyID <= playersNum_.size() - 1))
+	{
+		return;
+	}
+
+	playersNum_[MyID].first = -1;
+}
+
+void AStageMain::Put(const int32& MyID)
+{
+	// ガード処理
+	if (!playersNum_.size())
+	{
+		UE_LOG(LogTemp, Error, TEXT("NotPlayer"));
+		return;
+	}
+	if (!(0 <= MyID && MyID <= playersNum_.size() - 1))
+	{
+		UE_LOG(LogTemp, Error, TEXT("IDError"));
+		return;
+	}
+	if (playersNum_[MyID].first == -1)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Out"));
+		return;
+	}
+	UE_LOG(LogTemp, Error, TEXT("Put"));
+	// 何も設置されてなかったら設置する
+	if (spaceState_[playersNum_[MyID].first].first == StageSpaceState::NotPut)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, TEXT("leftPut"));
 		if (subClass_ != nullptr)
 		{
-			spaceState_[num].first = StageSpaceState::Put;
+			spaceState_[playersNum_[MyID].first].first = StageSpaceState::Put;
 
-			spaceState_[num].second = GetWorld()->SpawnActor<AActor>(subClass_);
-			spaceState_[num].second->SetActorLocation(point);
+			spaceState_[playersNum_[MyID].first].second = GetWorld()->SpawnActor<AActor>(subClass_);
+			spaceState_[playersNum_[MyID].first].second->SetActorLocation(playersNum_[MyID].second);
 		}
 	}
-	else if (spaceState_[num].first == StageSpaceState::Put && rightClick)
+}
+
+void AStageMain::Take(const int32& MyID)
+{
+	// ガード処理
+	if (!playersNum_.size())
 	{
-		if (GetWorld()->DestroyActor(spaceState_[num].second))
+		return;
+	}
+	if (!(0 <= MyID && MyID <= playersNum_.size() - 1))
+	{
+		return;
+	}
+	if (playersNum_[MyID].first == -1)
+	{
+		return;
+	}
+
+	// 何か設置されていたら削除する
+	if (spaceState_[playersNum_[MyID].first].first == StageSpaceState::Put)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, TEXT("take"));
+		if (GetWorld()->DestroyActor(spaceState_[playersNum_[MyID].first].second))
 		{
-			spaceState_[num].first = StageSpaceState::NotPut;
+			spaceState_[playersNum_[MyID].first].first = StageSpaceState::NotPut;
 		}
 	}
+}
+
+void AStageMain::AddPlayer(UPARAM(ref) int32& MyID)
+{
+	playersNum_.push_back({ -1, {} });
+	MyID = playersNum_.size() - 1;
 }
 
