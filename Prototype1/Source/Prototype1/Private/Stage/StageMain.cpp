@@ -8,7 +8,7 @@
 
 // Sets default values
 AStageMain::AStageMain() :
-	rayLength_(10000.0f), dbgTime_(0.01f), SpaceSize_(10.0f)
+	rayLength_(10000.0f), dbgTime_(0.01f), SpaceSize_(100.0f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -141,7 +141,7 @@ void AStageMain::Put(const int32& MyID)
 		UE_LOG(LogTemp, Error, TEXT("Out"));
 		return;
 	}
-	UE_LOG(LogTemp, Error, TEXT("Put"));
+	UE_LOG(LogTemp, Display, TEXT("Put"));
 	// âΩÇ‡ê›íuÇ≥ÇÍÇƒÇ»Ç©Ç¡ÇΩÇÁê›íuÇ∑ÇÈ
 	if (spaceState_[playersNum_[MyID].first].first == StageSpaceState::NotPut)
 	{
@@ -187,5 +187,6 @@ void AStageMain::AddPlayer(UPARAM(ref) int32& MyID)
 {
 	playersNum_.push_back({ -1, {} });
 	MyID = playersNum_.size() - 1;
+	UE_LOG(LogTemp, Display, TEXT("AddPlayer : %d"), MyID);
 }
 
