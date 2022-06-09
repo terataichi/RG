@@ -58,7 +58,7 @@ public:
 	UCameraComponent* FPSCameraComponent;
 
 	// First-person mesh(arms)
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
 	USkeletalMeshComponent* FPSMesh;
 
 	// Gun muzzle offset from the camera location.
