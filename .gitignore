@@ -80,3 +80,5 @@ DerivedDataCache
 /Prototype1/*.sln
 /Prototype1/Plugins
 /AWSTest/Plugins
+/Prototype1/Content/MilitaryWeapSilver
+/Prototype1/Content/MilitaryWeapDark
