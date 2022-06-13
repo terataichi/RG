@@ -21,7 +21,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
 public:
 	// Gun muzzle offset from the camera location.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
@@ -29,20 +28,17 @@ public:
 
 	// FPScamera
 	UPROPERTY(VisibleAnywhere)
-		UCameraComponent* FPSCameraComponent;
+	UCameraComponent* FPSCameraComponent;
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Handles input for moving foward and backward
-	UFUNCTION()
-		void MoveForwardAndBackward(float value);
+	void MoveForwardAndBackward(float value);
 
-	UFUNCTION()
-		void MoveRightAndLeft(float value);
+	void MoveRightAndLeft(float value);
 
+	void MoveUpdown(float value);
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-
 };
