@@ -24,7 +24,7 @@ void AStageMain::BeginPlay()
 	// 中心座標と大きさの取得
 	this->GetActorBounds(true, centerPos_, size_);
 
-	// サイズは半分になってるので二倍にする
+	// 中央からのサイズになってるので全体のサイズは２倍
 	size_ *= 2.0f;
 
 	divisionNumMAX_ = size_ / SpaceSize_;
@@ -40,6 +40,8 @@ void AStageMain::BeginPlay()
 
 	path_ = "/Game/Stage/BP/StageObj/MyTestObj.MyTestObj_C";							// /Content 以下のパスが /Game 以下のパスに置き換わり、コンテントブラウザーで名前が test なら test.test_C を指定する。
 	subClass_ = TSoftClassPtr<AActor>(FSoftObjectPath(*path_)).LoadSynchronous();		// 上記で設定したパスに該当するクラスを取得
+
+	GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Red, TEXT("Stage Init"));
 }
 
 // Called every frame
@@ -60,18 +62,35 @@ void AStageMain::Tick(float DeltaTime)
 	//right_ = playerCtl->WasInputKeyJustPressed(EKeys::RightMouseButton);
 }
 
-void AStageMain::SpaceSpecific(const int32& MyID, const FVector& impactPoint)
+void AStageMain::DrawSpace(const int32& spaceNum)
 {
-	// ガード処理
-	if (!playersNum_.size())
+	auto num = SpaceToXY(spaceNum);
+
+	FVector drawPos =
 	{
-		return;
+		num.X * divSize_.X + divSize_.X / 2.0f - size_.X / 2.0f,
+		num.Y * divSize_.Y + divSize_.Y / 2.0f - size_.Y / 2.0f,
+		centerPos_.Z + size_.Z
+	};
+
+	// デバッグ用ガイド表示
+	FLinearColor col = FLinearColor::Red;
+	if (spaceState_[spaceNum].first == StageSpaceState::NotPut)
+	{
+		col = FLinearColor::Blue;
 	}
-	if (!(0 <= MyID && MyID <= playersNum_.size() - 1))
+	if (spaceState_[spaceNum].first == StageSpaceState::Put)
 	{
-		return;
+		col = FLinearColor::Green;
 	}
 
+	// デバッグ描画
+	//UKismetSystemLibrary::DrawDebugSphere(GetWorld(), impactPoint, 30.0f, 12, col);
+	UKismetSystemLibrary::DrawDebugBox(GetWorld(), drawPos, divSize_ / 2.0f, col);
+}
+
+int32 AStageMain::GetSpaceNum(const FVector& impactPoint)
+{
 	// マスの特定(原点が中心なのでずらす)
 	int X = static_cast<int>((impactPoint.X + size_.X / 2.0f) / divSize_.X);
 	int Y = static_cast<int>((impactPoint.Y + size_.Y / 2.0f) / divSize_.Y);
@@ -80,113 +99,111 @@ void AStageMain::SpaceSpecific(const int32& MyID, const FVector& impactPoint)
 	X = FMath::Clamp(X, 0, static_cast<int>(divisionNumMAX_.X) - 1);
 	Y = FMath::Clamp(Y, 0, static_cast<int>(divisionNumMAX_.Y) - 1);
 
-	// 配列の番号
-	playersNum_[MyID].first = Y * divisionNumMAX_.X + X;
+	// マス目の計算
+	int32 num = Y * divisionNumMAX_.X + X;
 
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue,FString::FromInt(playersNum_[MyID].first));
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, FString::FromInt(num));
 
-	playersNum_[MyID].second =
-	{
-		X * divSize_.X + divSize_.X / 2.0f - size_.X / 2.0f,
-		Y * divSize_.Y + divSize_.Y / 2.0f - size_.Y / 2.0f,
-		impactPoint.Z
-	};
-
-	// デバッグ用ガイド表示
-	FLinearColor col = FLinearColor::Red;
-	if (spaceState_[playersNum_[MyID].first].first == StageSpaceState::NotPut)
-	{
-		col = FLinearColor::Blue;
-	}
-	if (spaceState_[playersNum_[MyID].first].first == StageSpaceState::Put)
-	{
-		col = FLinearColor::Green;
-	}
-
-	// デバッグ描画
-	UKismetSystemLibrary::DrawDebugSphere(GetWorld(), impactPoint, 30.0f, 12, col);
-	UKismetSystemLibrary::DrawDebugBox(GetWorld(), playersNum_[MyID].second, divSize_ / 2.0f, col);
+	return  num;
 }
 
-void AStageMain::Reset(const int32& MyID)
+FVector2D AStageMain::SpaceToXY(const int32& spaceNum)
 {
-	// ガード処理
-	if (!playersNum_.size())
-	{
-		return;
-	}
-	if (!(0 <= MyID && MyID <= playersNum_.size() - 1))
-	{
-		return;
-	}
+	// 番号をマス目に変換
+	int X = spaceNum % static_cast<int>(divisionNumMAX_.Y);
+	int Y = spaceNum / static_cast<int>(divisionNumMAX_.Y);
 
-	playersNum_[MyID].first = -1;
+	// 範囲外参照を避けるためクランプ
+	X = FMath::Clamp(X, 0, static_cast<int>(divisionNumMAX_.X) - 1);
+	Y = FMath::Clamp(Y, 0, static_cast<int>(divisionNumMAX_.Y) - 1);
+
+	return FVector2D(X,Y);
 }
 
-void AStageMain::Put(const int32& MyID)
+void AStageMain::Reset(const int32& myID)
 {
 	// ガード処理
-	if (!playersNum_.size())
+	//if (!playersNum_.size())
+	//{
+	//	return;
+	//}
+	//if (!(0 <= myID && myID <= playersNum_.size() - 1))
+	//{
+	//	return;
+	//}
+
+	//playersNum_[myID].first = -1;
+}
+
+void AStageMain::Put(const int32& spaceNum)
+{
+	// ガード処理
+	if (spaceNum == -1)
 	{
-		UE_LOG(LogTemp, Error, TEXT("NotPlayer"));
 		return;
 	}
-	if (!(0 <= MyID && MyID <= playersNum_.size() - 1))
-	{
-		UE_LOG(LogTemp, Error, TEXT("IDError"));
-		return;
-	}
-	if (playersNum_[MyID].first == -1)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Out"));
-		return;
-	}
-	UE_LOG(LogTemp, Display, TEXT("Put"));
 	// 何も設置されてなかったら設置する
-	if (spaceState_[playersNum_[MyID].first].first == StageSpaceState::NotPut)
+	if (spaceState_[spaceNum].first != StageSpaceState::NotPut)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, TEXT("leftPut"));
-		if (subClass_ != nullptr)
-		{
-			spaceState_[playersNum_[MyID].first].first = StageSpaceState::Put;
-
-			spaceState_[playersNum_[MyID].first].second = GetWorld()->SpawnActor<AActor>(subClass_);
-			spaceState_[playersNum_[MyID].first].second->SetActorLocation(playersNum_[MyID].second);
-		}
+		return;
 	}
+
+	if (subClass_ == nullptr)
+	{
+		return;
+	}
+
+	// 番号をマス目に変換
+	auto num = SpaceToXY(spaceNum);
+
+
+	// 設置場所
+	FVector putPos =
+	{
+		num.X * divSize_.X + divSize_.X / 2.0f - size_.X / 2.0f,
+		num.Y * divSize_.Y + divSize_.Y / 2.0f - size_.Y / 2.0f,
+		centerPos_.Z + size_.Z
+	};
+	spaceState_[spaceNum].first = StageSpaceState::Put;
+
+	spaceState_[spaceNum].second = GetWorld()->SpawnActor<AActor>(subClass_);
+	spaceState_[spaceNum].second->SetActorLocation(putPos);
+
+	UE_LOG(LogTemp, Display, TEXT("Put"));
 }
 
-void AStageMain::Take(const int32& MyID)
+void AStageMain::Take(const int32& spaceNum)
 {
 	// ガード処理
-	if (!playersNum_.size())
+	if (spaceNum == -1)
 	{
 		return;
 	}
-	if (!(0 <= MyID && MyID <= playersNum_.size() - 1))
-	{
-		return;
-	}
-	if (playersNum_[MyID].first == -1)
+	// 置かれているか確認
+	if (spaceState_[spaceNum].first != StageSpaceState::Put)
 	{
 		return;
 	}
 
 	// 何か設置されていたら削除する
-	if (spaceState_[playersNum_[MyID].first].first == StageSpaceState::Put)
+	if (GetWorld()->DestroyActor(spaceState_[spaceNum].second))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, TEXT("take"));
-		if (GetWorld()->DestroyActor(spaceState_[playersNum_[MyID].first].second))
-		{
-			spaceState_[playersNum_[MyID].first].first = StageSpaceState::NotPut;
-		}
+		spaceState_[spaceNum].first = StageSpaceState::NotPut;
 	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, TEXT("take"));
+	
 }
 
-void AStageMain::AddPlayer(UPARAM(ref) int32& MyID)
-{
-	playersNum_.push_back({ -1, {} });
-	MyID = playersNum_.size() - 1;
-	UE_LOG(LogTemp, Display, TEXT("AddPlayer : %d"), MyID);
-}
+//int32 AStageMain::AddPlayer(UPARAM(ref) int32& myID)
+//{
+//	playersNum_.push_back({ -1, {} });
+//
+//	myID = playersNum_.size() - 1;
+//	int32 id = myID;
+//
+//	UE_LOG(LogTemp, Display, TEXT("AddPlayer : %d"), id);
+//	return id;
+//}
 

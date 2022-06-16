@@ -30,29 +30,36 @@ public:
 	/// <summary>
 	/// マスを特定する
 	/// </summary>
-	/// <param name="impactPoint">マスを置きたい座標</param>
+	/// <param name="impactPoint">置きたいマス</param>
 	UFUNCTION(BlueprintCallable, Category = "StageF")
-	void SpaceSpecific(const int32& MyID, const FVector& impactPoint);
+	void DrawSpace(const int32& spaceNum);
 
 	/// <summary>
 	/// 初期化設定をする
 	/// </summary>
 	UFUNCTION(BlueprintCallable, Category = "StageF")
-	void Reset(const int32& MyID);
+	void Reset(const int32& myID);
 
 	// 設置命令
+	// あとでアイテムリストももらうようにする
 	UFUNCTION(BlueprintCallable, Category = "StageF")
-	void Put(const int32& MyID);
+	void Put(const int32& spaceNum);
 	// 撤去命令
 	UFUNCTION(BlueprintCallable, Category = "StageF")
-	void Take(const int32& MyID);
+	void Take(const int32& spaceNum);
 
-	// プレイヤーの追加
-	// 引数に保存したい変数を渡す
+	// 撤去命令
 	UFUNCTION(BlueprintCallable, Category = "StageF")
-	void AddPlayer(UPARAM(ref) int32& MyID);
+	int32 GetSpaceNum(const FVector& impactPoint);
+
+	//// プレイヤーの追加
+	//// 引数に保存したい変数を渡す
+	//UFUNCTION(BlueprintCallable, Category = "StageF")
+	//int32 AddPlayer(UPARAM(ref) int32& myID);
 
 private:
+	// マス目を縦と横何マスか調べる
+	FVector2D SpaceToXY(const int32& spaceNum);
 
 	UPROPERTY(EditAnywhere, Meta = (ClampMin = 1,ClampMax = 10000))
 	float rayLength_;																	// レイの長さ
@@ -69,7 +76,7 @@ private:
 	FVector size_;																		// モデル全体の大きさ
 	FVector divSize_;																	// 1分割分の大きさ
 
-	std::vector<std::pair<int32, FVector>> playersNum_;									// プレイヤーごとにほしい情報{マスの番号、設置する場合の座標}
+	//std::vector<std::pair<int32, FVector>> playersNum_;								// プレイヤーごとにほしい情報{マスの番号、設置する場合の座標}
 
 	std::vector<std::pair<StageSpaceState, AActor*>> spaceState_;						// マスのステータスと配置オブジェクト
 
