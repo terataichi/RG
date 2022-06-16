@@ -20,6 +20,9 @@ public:
 
 protected:
 	// Called when the game starts or when spawned
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerBeginPlay();
+
 	virtual void BeginPlay() override;
 public:
 	// Gun muzzle offset from the camera location.

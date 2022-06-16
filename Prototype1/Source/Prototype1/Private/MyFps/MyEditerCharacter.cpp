@@ -2,6 +2,7 @@
 
 
 #include "MyFps/MyEditerCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AMyEditerCharacter::AMyEditerCharacter()
@@ -23,15 +24,33 @@ AMyEditerCharacter::AMyEditerCharacter()
 	bReplicates = true;
 }
 
-// Called when the game starts or when spawned
 void AMyEditerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 飛行モード
-	this->GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	AMyEditerCharacter::ServerBeginPlay();
 }
 
+// Called when the game starts or when spawned
+void AMyEditerCharacter::ServerBeginPlay_Implementation()
+{
+	// 飛行モード
+	this->GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+
+	APlayerController* playerCtl = UGameplayStatics::GetPlayerController(this, 0);
+	UE_LOG(LogTemp, Log, TEXT("BeginPlay now"));
+	if (playerCtl) {
+		UE_LOG(LogTemp, Log, TEXT("have playerctl "));
+	}
+	else {
+		UE_LOG(LogTemp, Log, TEXT("don't have playerctl"));
+	}
+}
+
+bool AMyEditerCharacter::ServerBeginPlay_Validate()
+{
+	return true;
+}
 // Called every frame
 void AMyEditerCharacter::Tick(float DeltaTime)
 {
@@ -50,7 +69,6 @@ void AMyEditerCharacter::MoveForwardAndBackward(float value)
 	//AddMovementInput(GetActorForwardVector(), value);
 
 	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
-	Direction.Normalize();
 	value *= movescale_;
 	AddMovementInput(Direction, value);
 }
@@ -58,7 +76,6 @@ void AMyEditerCharacter::MoveRightAndLeft(float value)
 {
 	//FPSCameraComponent->GetForwardVector().RotateAngleAxis(value * deg);
 	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
-	Direction.Normalize();
 	value *= movescale_;
 	//SetActorLocation(GetActorLocation() + Direction);
 	AddMovementInput(Direction, value);
@@ -66,7 +83,6 @@ void AMyEditerCharacter::MoveRightAndLeft(float value)
 void AMyEditerCharacter::MoveUpdown(float value)
 {
 	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Z);
-	Direction.Normalize();
 	value *= movescale_;
 	AddMovementInput(Direction, value);
 }
