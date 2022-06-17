@@ -47,12 +47,11 @@ void AMyFPSCharacter::BeginPlay()
 	check(GEngine != nullptr);
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("I'm using MyFPSCharacter"));
-	
 }
 
 // Called every frame
 void AMyFPSCharacter::Tick(float DeltaTime)
-{
+{ 
 	Super::Tick(DeltaTime);
 }
 
@@ -69,25 +68,28 @@ void AMyFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAxis("Turn", this, &AMyFPSCharacter::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &AMyFPSCharacter::AddControllerPitchInput);
 
+	// set up "fire"
+	//PlayerInputComponent->BindAxis("FireKeep", this, &AMyFPSCharacter::FireKeep);
 
 	// set up "action"
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this,&AMyFPSCharacter::StartJump);
 	PlayerInputComponent->BindAction("LookUp", IE_Released ,this,&AMyFPSCharacter::StopJump);
 
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMyFPSCharacter::ServerFire);
+	//PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMyFPSCharacter::ServerFire);
 }
 
 void AMyFPSCharacter::MoveForwardAndBackward(float value)
 {
-	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
-	//AddMovementInput(Direction, value);
-	AddMovementInput(GetActorForwardVector(), value);
+	FVector direction = GetActorForwardVector();
+	direction.Normalize();
+	AddMovementInput(direction, value);
 }
 
 void AMyFPSCharacter::MoveRightAndLeft(float value)
 {
-	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
-	AddMovementInput(GetActorRightVector(), value);
+	FVector direction = GetActorRightVector();
+	direction.Normalize();
+	AddMovementInput(direction , value);
 }
 
 void AMyFPSCharacter::StartJump()
@@ -98,6 +100,10 @@ void AMyFPSCharacter::StartJump()
 void AMyFPSCharacter::StopJump()
 {
 	bPressedJump = false;
+}
+
+void AMyFPSCharacter::FireKeep()
+{
 }
 
 void AMyFPSCharacter::Fire()

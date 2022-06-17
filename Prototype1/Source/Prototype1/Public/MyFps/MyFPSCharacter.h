@@ -46,13 +46,17 @@ public:
 	UFUNCTION()
 	void StopJump();
 
+	UFUNCTION()
+	void FireKeep();
+
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerFire();
 
-	// Function that handles firing projectiles.
-	//UFUNCTION()
-	void Fire();
-	
+	// ïœêî
+	// Gun muzzle offset from the camera location.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	bool HaveFlag;
+
 	// FPScamera
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* FPSCameraComponent;
@@ -65,17 +69,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	FVector MuzzleOffset;
 
-
-	//UFUNCTION()
-	//bool GetFlag();
-
-	//UFUNCTION()
-	//void SetFlag(bool boolean);
-
-	// Gun muzzle offset from the camera location.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	bool HaveFlag;
-
+	// ïêäÌ
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	TArray<AActor*> Weaponvec_;
+
+	// ïêäÌ
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	AActor* myweapon_;
+
+	UFUNCTION(BlueprintCallable, Category = MyFunction)
+	void Fire();
+private:
 };
