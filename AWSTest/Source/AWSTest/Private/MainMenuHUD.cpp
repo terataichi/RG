@@ -6,19 +6,20 @@
 
 AMainMenuHUD::AMainMenuHUD()
 {
-	//static ConstructorHelpers::FClassFinder<UUserWidget> mainMenuObj(TEXT("/Game/MyContent/wedget/WB_MainMenu.WB_MainMenu"));
-	//mainMenuWidget_ = mainMenuObj.Class;
+	static ConstructorHelpers::FClassFinder<UUserWidget> mainMenuObj(TEXT("/Game/MyContent/wedget/WB_MainMenu.WB_MainMenu"));
+	mainMenuWidget_ = mainMenuObj.Class;
 }
 
 void AMainMenuHUD::BeginPlay() {
 	Super::BeginPlay();
 
-	/*APlayerController* playerController = GetWorld()->GetFirstPlayerController();
-	if (playerController != nullptr)
+	APlayerController* playerController = GetWorld()->GetFirstPlayerController();
+	if (playerController == nullptr)
 	{
-		// マウスカーソルを表示するように設定
-		playerController->bShowMouseCursor = true;
+		ensure(!"playerControllerがnullptr");
 	}
+	// マウスカーソルを表示するように設定
+	playerController->bShowMouseCursor = true;
 
 	if (mainMenuWidget_ == nullptr)
 	{
@@ -28,5 +29,9 @@ void AMainMenuHUD::BeginPlay() {
 	if (mainMenuWidget == nullptr)
 	{
 		ensure(!"mainMenuWidget生成失敗");
-	}*/
+	}
+
+	mainMenuWidget->AddToViewport();
+	mainMenuWidget->SetFocus();
+
 }
