@@ -1,0 +1,1 @@
+https://unrealfpsgame1916035.auth.ap-northeast-1.amazoncognito.com/login?client_id=368ufsftu4k1vnkumfim0nv95a&response_type=code&scope=aws.cognito.signin.user.admin+email+openid+phone+profile+unreal.fpsgame.spi/access&redirect_uri=https://8z0ukjq0oe.execute-api.ap-northeast-1.amazonaws.com/test/getsigninresult
