@@ -6,7 +6,7 @@
 
 AMainMenuHUD::AMainMenuHUD()
 {
-	static ConstructorHelpers::FClassFinder<UUserWidget> mainMenuObj(TEXT("/Game/MyContent/wedget/WB_MainMenu.WB_MainMenu"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> mainMenuObj(TEXT("/Game/MyContent/wedget/WB_MainMenu"));
 	mainMenuWidget_ = mainMenuObj.Class;
 }
 
