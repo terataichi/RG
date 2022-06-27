@@ -8,9 +8,7 @@ public class Prototype1 : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" , "GameLiftServerSDK" });
-
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "MoveIt" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" , "GameLiftServerSDK", "MoveIt" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
