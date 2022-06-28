@@ -39,3 +39,11 @@ void UMainMenuWidget::NativeConstruct()
 
 	webBrowser_->LoadURL(loginUrl_);
 }
+
+void UMainMenuWidget::HandleLoginUrlChange()
+{
+}
+
+void UMainMenuWidget::OnExchangeCodeForTokensResponseReceived(FHttpRequestPtr request, FHttpRequestPtr response, bool bWasSuccessfull)
+{
+}

@@ -48,18 +48,6 @@ void AStageMain::BeginPlay()
 void AStageMain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	//// プレイヤーコントローラーの取得
-	//APlayerController* playerCtl = UGameplayStatics::GetPlayerController(this, 0);
-
-	//if (!playerCtl)
-	//{
-	//	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("notPCTL"));
-	//	return;
-	//}
-
-	//left_ = playerCtl->WasInputKeyJustPressed(EKeys::LeftMouseButton);
-	//right_ = playerCtl->WasInputKeyJustPressed(EKeys::RightMouseButton);
 }
 
 void AStageMain::DrawSpace(const int32& spaceNum)
@@ -86,14 +74,15 @@ void AStageMain::DrawSpace(const int32& spaceNum)
 
 	// デバッグ描画
 	//UKismetSystemLibrary::DrawDebugSphere(GetWorld(), impactPoint, 30.0f, 12, col);
-	UKismetSystemLibrary::DrawDebugBox(GetWorld(), drawPos, divSize_ / 2.0f, col);
+	UKismetSystemLibrary::DrawDebugBox(GetWorld(), drawPos + this->GetActorLocation(), divSize_ / 2.0f, col);
 }
 
 int32 AStageMain::GetSpaceNum(const FVector& impactPoint)
 {
+	auto location = this->GetActorLocation();
 	// マスの特定(原点が中心なのでずらす)
-	int X = static_cast<int>((impactPoint.X + size_.X / 2.0f) / divSize_.X);
-	int Y = static_cast<int>((impactPoint.Y + size_.Y / 2.0f) / divSize_.Y);
+	int X = static_cast<int>((impactPoint.X - location.X+ size_.X / 2.0f) / divSize_.X);
+	int Y = static_cast<int>((impactPoint.Y - location.Y+ size_.Y / 2.0f) / divSize_.Y);
 
 	// 範囲外参照を避けるためクランプ
 	X = FMath::Clamp(X, 0, static_cast<int>(divisionNumMAX_.X) - 1);
@@ -156,6 +145,8 @@ void AStageMain::Put(const int32& spaceNum)
 	// 番号をマス目に変換
 	auto num = SpaceToXY(spaceNum);
 
+	// 中心座標と大きさの取得
+	this->GetActorBounds(true, centerPos_, size_);
 
 	// 設置場所
 	FVector putPos =
