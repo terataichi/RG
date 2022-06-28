@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Runtime/Online/HTTP/Public/Http.h"
 #include "MainMenuWidget.generated.h"
 
 class UWebBrowser;
@@ -26,5 +27,16 @@ private:
 		FString loginUrl_;
 
 	UPROPERTY()
+		FString apiUrl_;
+
+	UPROPERTY()
+		FString callbackUrl_;
+
+	UPROPERTY()
 		UWebBrowser* webBrowser_;
+
+	UFUNCTION()
+		void HandleLoginUrlChange();
+
+	void OnExchangeCodeForTokensResponseReceived(FHttpRequestPtr request, FHttpRequestPtr response, bool bWasSuccessfull);
 };
