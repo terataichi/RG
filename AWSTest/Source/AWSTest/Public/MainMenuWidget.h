@@ -23,6 +23,8 @@ public:
 protected:
 	virtual void NativeConstruct()override;
 private:
+	FHttpModule* httpModule_;
+
 	UPROPERTY()
 		FString loginUrl_;
 
@@ -38,5 +40,5 @@ private:
 	UFUNCTION()
 		void HandleLoginUrlChange();
 
-	void OnExchangeCodeForTokensResponseReceived(FHttpRequestPtr request, FHttpRequestPtr response, bool bWasSuccessfull);
+	void OnExchangeCodeForTokensResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull);
 };

@@ -39,7 +39,7 @@ void UUnrealFpsGameInstance::SetCognitoTokens(const FString& newAccessToken, con
 	idToken_ = newIdToken;
 	refreshToken_ = newRefreshToken;
 
-	UE_LOG(LogTmp, Warning, TEXT("access token: %s"), *accessToken_);
+	UE_LOG(LogTemp, Warning, TEXT("access token: %s"), *accessToken_);
 
 	GetWorld()->GetTimerManager().SetTimer(retrieveNewTokensHandle_, this, &UUnrealFpsGameInstance::RetrieveNewTokens, 1.0f, false, 60.0f);
 
@@ -84,8 +84,8 @@ void UUnrealFpsGameInstance::OnRetrieveNewTokensResponseReceived(FHttpRequestPtr
 	auto reader = TJsonReaderFactory<>::Create(response->GetContentAsString());
 	if (!FJsonSerializer::Deserialize(reader,jsonObject) || jsonObject->HasField("error"))
 	{
-		UE_LOG(LogTmp, Warning, TEXT("OnRetrieveNewTokensResponseReceived"));
-		GetWorld()->GetTimerManager().SetTimer(retrieveNewTokensHandle_, this, UUnrealFpsGameInstance::RetrieveNewTokens, 1.0f, false, 30.0f);
+		UE_LOG(LogTemp, Warning, TEXT("OnRetrieveNewTokensResponseReceived"));
+		GetWorld()->GetTimerManager().SetTimer(retrieveNewTokensHandle_, this, &UUnrealFpsGameInstance::RetrieveNewTokens, 1.0f, false, 30.0f);
 		return;
 	}
 	SetCognitoTokens(jsonObject->GetStringField("accessToken"), jsonObject->GetStringField("idToken"), refreshToken_);
