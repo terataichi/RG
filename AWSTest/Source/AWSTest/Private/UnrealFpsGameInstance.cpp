@@ -39,9 +39,10 @@ void UUnrealFpsGameInstance::SetCognitoTokens(const FString& newAccessToken, con
 	idToken_ = newIdToken;
 	refreshToken_ = newRefreshToken;
 
-	UE_LOG(LogTemp, Warning, TEXT("access token: %s"), *accessToken_);
+	//UE_LOG(LogTemp, Warning, TEXT("access token: %s"), *accessToken_);
+	//UE_LOG(LogTemp, Warning, TEXT("refresh token: %s"), *refreshToken_);
 
-	GetWorld()->GetTimerManager().SetTimer(retrieveNewTokensHandle_, this, &UUnrealFpsGameInstance::RetrieveNewTokens, 1.0f, false, 60.0f);
+	GetWorld()->GetTimerManager().SetTimer(retrieveNewTokensHandle_, this, &UUnrealFpsGameInstance::RetrieveNewTokens, 1.0f, false, 3300.0f);
 
 
 }

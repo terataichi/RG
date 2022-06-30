@@ -50,10 +50,13 @@ void UMainMenuWidget::NativeConstruct()
 	FScriptDelegate loginDelegate;
 	loginDelegate.BindUFunction(this, "HandleLoginUrlChange");
 	webBrowser_->OnUrlChanged.Add(loginDelegate);
+
+	UE_LOG(LogTemp, Log, TEXT("UMainMenuWidget:NativeConstruct"));
 }
 
 void UMainMenuWidget::HandleLoginUrlChange()
 {
+	UE_LOG(LogTemp, Log, TEXT("UMainMenuWidget:HandleLoginUrlChange"));
 	FString browserUrl = webBrowser_->GetUrl();
 	FString url;
 	FString queryParameters;
@@ -89,19 +92,23 @@ void UMainMenuWidget::HandleLoginUrlChange()
 	exChangeCodeForTokensRequest->SetHeader("Content-Type", "application/json");
 	exChangeCodeForTokensRequest->SetContentAsString(requestBody);
 	exChangeCodeForTokensRequest->ProcessRequest();
+	UE_LOG(LogTemp, Log, TEXT("UMainMenuWidget:HandleLoginUrlChange end"));
 }
 
 void UMainMenuWidget::OnExchangeCodeForTokensResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull)
 {
 	if (!bWasSuccessfull)
 	{
+		check(!"OnExchangeCodeForTokensResponseReceived is not bWasSuccessfull");
 		return;
 	}
+	UE_LOG(LogTemp, Log, TEXT("UMainMenuWidget:OnExchangeCodeForTokensResponseReceived"));
 	TSharedPtr<FJsonObject> jsonObject;
 	auto reader = TJsonReaderFactory<>::Create(response->GetContentAsString());
 
-	if (FJsonSerializer::Deserialize(reader,jsonObject) || jsonObject->HasField("error"))
+	if (!FJsonSerializer::Deserialize(reader,jsonObject) || jsonObject->HasField("error"))
 	{
+		check(!"json is error");
 		return;
 	}
 
@@ -124,4 +131,5 @@ void UMainMenuWidget::OnExchangeCodeForTokensResponseReceived(FHttpRequestPtr re
 	fpsGameInstance->SetCognitoTokens(
 		jsonObject->GetStringField("access_token"),jsonObject->GetStringField("id_token"), jsonObject->GetStringField("refresh_token")
 	);
+	UE_LOG(LogTemp, Log, TEXT("UMainMenuWidget:OnExchangeCodeForTokensResponseReceived end"));
 }
