@@ -8,7 +8,15 @@ public class Prototype1 : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" , "GameLiftServerSDK", "MoveIt" });
+		PublicDependencyModuleNames.AddRange(new string[] { 
+			"Core",
+			"CoreUObject",
+			"Engine", 
+			"InputCore" , 
+			"GameLiftServerSDK", 
+			"MoveIt",
+			"LPSPSample"
+		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
