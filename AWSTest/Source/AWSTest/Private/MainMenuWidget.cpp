@@ -3,8 +3,12 @@
 
 #include "MainMenuWidget.h"
 #include "TextReaderComponent.h"
+
 #include "WebBrowser.h"
 #include "WebBrowserModule.h"
+#include "Components/TextBlock.h"
+#include "Components/Button.h"
+
 #include "IWebBrowserSingleton.h"
 #include "IWebBrowserCookieManager.h"
 #include "../Public/UnrealFpsGameInstance.h"
@@ -26,13 +30,13 @@ UMainMenuWidget::UMainMenuWidget(const FObjectInitializer& objectInitializer):
 
 void UMainMenuWidget::NativeConstruct()
 {
-	Super::NativeConstruct();
+	UUserWidget::NativeConstruct();
 	bIsFocusable = true;
 
 	IWebBrowserSingleton* webBrowserSinglton = IWebBrowserModule::Get().GetSingleton();
 
-	webBrowser_ = static_cast<UWebBrowser*>(GetWidgetFromName(TEXT("WebBrowser_Login")));
-
+	InitWidgets();
+	
 	if (webBrowserSinglton == nullptr)
 	{
 		check(!"webBrowserSingltonがnullptr");
@@ -52,6 +56,35 @@ void UMainMenuWidget::NativeConstruct()
 	webBrowser_->OnUrlChanged.Add(loginDelegate);
 
 	UE_LOG(LogTemp, Log, TEXT("UMainMenuWidget:NativeConstruct"));
+}
+
+std::pair<bool, TSharedPtr<FJsonObject>> UMainMenuWidget::CheckJsonError(FHttpResponsePtr response)
+{
+	TSharedPtr<FJsonObject> jsonObject;
+	auto reader = TJsonReaderFactory<>::Create(response->GetContentAsString());
+
+	if (!FJsonSerializer::Deserialize(reader, jsonObject) || jsonObject->HasField("error"))
+	{
+		check(!"json is error");
+		// エラーだからからのObject返しとく
+		return std::pair<bool, TSharedPtr<FJsonObject>>{true,TSharedPtr<FJsonObject>()};
+	}
+	return std::pair<bool, TSharedPtr<FJsonObject>>{false, jsonObject};
+}
+
+void UMainMenuWidget::InitWidgets()
+{
+	webBrowser_ = Cast<UWebBrowser>(GetWidgetFromName(TEXT("WebBrowser_Login")));
+
+	matchmakingButton_ = Cast<UButton>(GetWidgetFromName(TEXT("Button_MatchMaking")));
+
+	winsTextBlock_ = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_Wins")));
+
+	lossesTextBlock_ = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_Losses")));
+
+	pingTextBlock_ = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_Ping")));
+
+	matchmakingEventTextBlock_ = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_MatchMakingEvent")));
 }
 
 void UMainMenuWidget::HandleLoginUrlChange()
@@ -95,6 +128,16 @@ void UMainMenuWidget::HandleLoginUrlChange()
 	UE_LOG(LogTemp, Log, TEXT("UMainMenuWidget:HandleLoginUrlChange end"));
 }
 
+void UMainMenuWidget::PlayerDataReques(const FString& accessToken)
+{
+	auto getPlayerDataRequest = httpModule_->CreateRequest();
+	getPlayerDataRequest->OnProcessRequestComplete().BindUObject(this, &UMainMenuWidget::OnGetPlayerDataResponseReceived);
+	getPlayerDataRequest->SetURL(apiUrl_ + "/getplayerdata");
+	getPlayerDataRequest->SetVerb("GET");
+	getPlayerDataRequest->SetHeader("Authorization", accessToken);
+	getPlayerDataRequest->ProcessRequest();
+}
+
 void UMainMenuWidget::OnExchangeCodeForTokensResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull)
 {
 	if (!bWasSuccessfull)
@@ -103,14 +146,15 @@ void UMainMenuWidget::OnExchangeCodeForTokensResponseReceived(FHttpRequestPtr re
 		return;
 	}
 	UE_LOG(LogTemp, Log, TEXT("UMainMenuWidget:OnExchangeCodeForTokensResponseReceived"));
-	TSharedPtr<FJsonObject> jsonObject;
-	auto reader = TJsonReaderFactory<>::Create(response->GetContentAsString());
 
-	if (!FJsonSerializer::Deserialize(reader,jsonObject) || jsonObject->HasField("error"))
+	auto checkJson = CheckJsonError(response);
+
+	if (checkJson.first)
 	{
-		check(!"json is error");
+		check(!"error");
 		return;
 	}
+	TSharedPtr<FJsonObject> jsonObject = checkJson.second;
 
 	UGameInstance* gameInstance = GetGameInstance();
 
@@ -128,8 +172,51 @@ void UMainMenuWidget::OnExchangeCodeForTokensResponseReceived(FHttpRequestPtr re
 		return;
 	}
 
-	fpsGameInstance->SetCognitoTokens(
-		jsonObject->GetStringField("access_token"),jsonObject->GetStringField("id_token"), jsonObject->GetStringField("refresh_token")
-	);
+	FString accessToken = jsonObject->GetStringField("access_token");
+	FString idToken = jsonObject->GetStringField("id_token");
+	FString refreshtoken = jsonObject->GetStringField("refresh_token");
+
+	fpsGameInstance->SetCognitoTokens(accessToken, idToken, refreshtoken);
+
+	PlayerDataReques(accessToken);
+
 	UE_LOG(LogTemp, Log, TEXT("UMainMenuWidget:OnExchangeCodeForTokensResponseReceived end"));
+}
+
+void UMainMenuWidget::OnGetPlayerDataResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull)
+{
+	if (!bWasSuccessfull)
+	{
+		check(!"OnGetPlayerDataResponseReceived is not bWasSuccessfull");
+		return;
+	}
+	auto checkJson = CheckJsonError(response);
+
+	if (checkJson.first)
+	{
+		check(!"error");
+		return;
+	}
+	TSharedPtr<FJsonObject> jsonObject = checkJson.second;
+
+	TSharedPtr<FJsonObject> playerData = jsonObject->GetObjectField("playerData");
+	TSharedPtr<FJsonObject> winsData = jsonObject->GetObjectField("Wins");
+	TSharedPtr<FJsonObject> lossesData = jsonObject->GetObjectField("Losses");
+
+	FString player = playerData->GetStringField("S");
+	FString wins = winsData->GetStringField("N");
+	FString losses = lossesData->GetStringField("N");
+
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *wins);
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *losses);
+
+	winsTextBlock_->SetText(FText::FromString("Wins: " + wins));
+	lossesTextBlock_->SetText(FText::FromString("Losses: " + losses));
+
+	// Widgetの表示の変更
+	webBrowser_->SetVisibility(ESlateVisibility::Hidden);
+	winsTextBlock_->SetVisibility(ESlateVisibility::Visible);
+	lossesTextBlock_->SetVisibility(ESlateVisibility::Visible);
+	pingTextBlock_->SetVisibility(ESlateVisibility::Visible);
+	matchmakingEventTextBlock_->SetVisibility(ESlateVisibility::Visible);
 }
