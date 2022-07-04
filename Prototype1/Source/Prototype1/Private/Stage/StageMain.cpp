@@ -109,21 +109,6 @@ FVector2D AStageMain::SpaceToXY(const int32& spaceNum)
 	return FVector2D(X,Y);
 }
 
-void AStageMain::Reset(const int32& myID)
-{
-	// ガード処理
-	//if (!playersNum_.size())
-	//{
-	//	return;
-	//}
-	//if (!(0 <= myID && myID <= playersNum_.size() - 1))
-	//{
-	//	return;
-	//}
-
-	//playersNum_[myID].first = -1;
-}
-
 void AStageMain::Put(const int32& spaceNum)
 {
 	// ガード処理
@@ -145,14 +130,13 @@ void AStageMain::Put(const int32& spaceNum)
 	// 番号をマス目に変換
 	auto num = SpaceToXY(spaceNum);
 
-	// 中心座標と大きさの取得
-	this->GetActorBounds(true, centerPos_, size_);
+	auto location = this->GetActorLocation();
 
 	// 設置場所
 	FVector putPos =
 	{
-		num.X * divSize_.X + divSize_.X / 2.0f - size_.X / 2.0f,
-		num.Y * divSize_.Y + divSize_.Y / 2.0f - size_.Y / 2.0f,
+		location.X + (num.X * divSize_.X + divSize_.X / 2.0f - size_.X / 2.0f),
+		location.Y + (num.Y * divSize_.Y + divSize_.Y / 2.0f - size_.Y / 2.0f),
 		centerPos_.Z + size_.Z
 	};
 	spaceState_[spaceNum].first = StageSpaceState::Put;
