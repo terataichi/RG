@@ -34,12 +34,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "StageF")
 	void DrawSpace(const int32& spaceNum);
 
-	/// <summary>
-	/// 初期化設定をする
-	/// </summary>
-	UFUNCTION(BlueprintCallable, Category = "StageF")
-	void Reset(const int32& myID);
-
 	// 設置命令
 	// あとでアイテムリストももらうようにする
 	UFUNCTION(BlueprintCallable, Category = "StageF")
