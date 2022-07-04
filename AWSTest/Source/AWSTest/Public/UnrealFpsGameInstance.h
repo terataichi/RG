@@ -20,6 +20,10 @@ public:
 
 	virtual void Shutdown()override;
 
+	virtual void Init() override;
+
+	const TDoubleLinkedList<float>& GetPlayerLatencies()const;
+
 	UPROPERTY()
 		FString accessToken_;
 
@@ -32,17 +36,29 @@ public:
 	UPROPERTY()
 		FTimerHandle retrieveNewTokensHandle_;
 
+	UPROPERTY()
+		FTimerHandle responeTimeHandle_;
+
 	UFUNCTION()
 		void SetCognitoTokens(const FString& newAccessToken,const FString& newIdToken, const FString& newRefreshToken);
 
 private:
 	FHttpModule* httpModule_;
 
+	TDoubleLinkedList<float> playerLatencies_;
+
 	UPROPERTY()
 		FString apiUrl_;
+
+	UPROPERTY()
+		FString regionCode_;
 
 	UFUNCTION()
 		void RetrieveNewTokens();
 
+	UFUNCTION()
+		void GetRsponseTime();
+
 	void OnRetrieveNewTokensResponseReceived(FHttpRequestPtr request,FHttpResponsePtr response,bool bWasSuccessfull);
+	void OnGetResponseTimeResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull);
 };

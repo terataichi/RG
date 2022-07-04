@@ -15,6 +15,11 @@
 #include "Json.h"
 #include "JsonUtilities.h"
 
+namespace
+{
+	constexpr float DEFAULT_PLAYERLATENCY = 60.0f;
+}
+
 UMainMenuWidget::UMainMenuWidget(const FObjectInitializer& objectInitializer):
 	UUserWidget(objectInitializer)
 {
@@ -26,6 +31,10 @@ UMainMenuWidget::UMainMenuWidget(const FObjectInitializer& objectInitializer):
 	callbackUrl_ = textReader->ReadFile("Urls/CallbackUrl.txt");
 
 	httpModule_ = &FHttpModule::Get();
+
+	averagePlayerLatency_ = DEFAULT_PLAYERLATENCY;
+
+	searchingForGame_ = false;
 }
 
 void UMainMenuWidget::NativeConstruct()
@@ -33,9 +42,15 @@ void UMainMenuWidget::NativeConstruct()
 	UUserWidget::NativeConstruct();
 	bIsFocusable = true;
 
-	IWebBrowserSingleton* webBrowserSinglton = IWebBrowserModule::Get().GetSingleton();
-
 	InitWidgets();
+
+	FScriptDelegate matchmakingDelegate;
+	matchmakingDelegate.BindUFunction(this, "OnMatchmakingButtonClicked");
+	matchmakingButton_->OnClicked.Add(matchmakingDelegate);
+
+	GetWorld()->GetTimerManager().SetTimer(averagePlayerLatencyHandle_, this, &UMainMenuWidget::SetAveragePlayerLatency, 1.0f, true, 1.0f);
+
+	IWebBrowserSingleton* webBrowserSinglton = IWebBrowserModule::Get().GetSingleton();
 	
 	if (webBrowserSinglton == nullptr)
 	{
@@ -128,6 +143,66 @@ void UMainMenuWidget::HandleLoginUrlChange()
 	UE_LOG(LogTemp, Log, TEXT("UMainMenuWidget:HandleLoginUrlChange end"));
 }
 
+void UMainMenuWidget::SetAveragePlayerLatency()
+{
+	UGameInstance* gameInstance = GetGameInstance();
+	if (gameInstance == nullptr)
+	{
+		check(!"gameInstance‚ªnullptr");
+		return;
+	}
+
+	UUnrealFpsGameInstance* fpsGameInstance = Cast<UUnrealFpsGameInstance>(gameInstance);
+
+	if (fpsGameInstance == nullptr)
+	{
+		check(!"fpsGameInstance‚ªnullptr");
+		return;
+	}
+	float totalPlayerLatency = 0.0f;
+	const auto& playerLatencyList = fpsGameInstance->GetPlayerLatencies();
+	if (playerLatencyList.Num() <= 0)
+	{
+		// playerLatencyListSize‚ª0‚È‚çŒvŽZ‚à‰½‚à‚È‚¢‚Ì‚Åreturn
+		return;
+	}
+	for (float playerLatency : playerLatencyList)
+	{
+		totalPlayerLatency += playerLatency;
+	}
+
+	if (totalPlayerLatency < 0.0f)
+	{
+		check(!"totalPlayerLatency‚ª0");
+		return;
+	}
+
+	averagePlayerLatency_ = totalPlayerLatency / playerLatencyList.Num();
+
+	FString pingString = "Ping: " + FString::FromInt(FMath::RoundToInt(averagePlayerLatency_)) + "ms";
+	pingTextBlock_->SetText(FText::FromString(pingString));
+}
+
+void UMainMenuWidget::OnMatchmakingButtonClickd()
+{
+	if (searchingForGame_)
+	{
+		searchingForGame_ = false;
+
+		UTextBlock* buttonTextBlock = Cast<UTextBlock>(matchmakingButton_->GetChildAt(0));
+		buttonTextBlock->SetText(FText::FromString("Join Game"));
+		matchmakingEventTextBlock_->SetText(FText::FromString(""));
+	}
+	else
+	{
+		searchingForGame_ = true;
+
+		UTextBlock* buttonTextBlock = Cast<UTextBlock>(matchmakingButton_->GetChildAt(0));
+		buttonTextBlock->SetText(FText::FromString("Cancel Matchmaking"));
+		matchmakingEventTextBlock_->SetText(FText::FromString("Currently looking for a match"));
+	}
+}
+
 void UMainMenuWidget::PlayerDataReques(const FString& accessToken)
 {
 	auto getPlayerDataRequest = httpModule_->CreateRequest();
@@ -200,10 +275,9 @@ void UMainMenuWidget::OnGetPlayerDataResponseReceived(FHttpRequestPtr request, F
 	TSharedPtr<FJsonObject> jsonObject = checkJson.second;
 
 	TSharedPtr<FJsonObject> playerData = jsonObject->GetObjectField("playerData");
-	TSharedPtr<FJsonObject> winsData = jsonObject->GetObjectField("Wins");
-	TSharedPtr<FJsonObject> lossesData = jsonObject->GetObjectField("Losses");
+	TSharedPtr<FJsonObject> winsData = playerData->GetObjectField("Wins");
+	TSharedPtr<FJsonObject> lossesData = playerData->GetObjectField("Losses");
 
-	FString player = playerData->GetStringField("S");
 	FString wins = winsData->GetStringField("N");
 	FString losses = lossesData->GetStringField("N");
 
@@ -215,6 +289,7 @@ void UMainMenuWidget::OnGetPlayerDataResponseReceived(FHttpRequestPtr request, F
 
 	// Widget‚Ì•\Ž¦‚Ì•ÏX
 	webBrowser_->SetVisibility(ESlateVisibility::Hidden);
+	matchmakingButton_->SetVisibility(ESlateVisibility::Visible);
 	winsTextBlock_->SetVisibility(ESlateVisibility::Visible);
 	lossesTextBlock_->SetVisibility(ESlateVisibility::Visible);
 	pingTextBlock_->SetVisibility(ESlateVisibility::Visible);

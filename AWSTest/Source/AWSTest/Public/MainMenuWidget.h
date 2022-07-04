@@ -23,6 +23,9 @@ class AWSTEST_API UMainMenuWidget : public UUserWidget
 
 public:
 	UMainMenuWidget(const FObjectInitializer& objectInitializer);
+
+	UPROPERTY()
+		FTimerHandle averagePlayerLatencyHandle_;
 	
 protected:
 	virtual void NativeConstruct()override;
@@ -56,8 +59,20 @@ private:
 	UPROPERTY()
 		UTextBlock* matchmakingEventTextBlock_;
 
+	UPROPERTY()
+		float averagePlayerLatency_;
+
+	UPROPERTY()
+		bool searchingForGame_;
+
 	UFUNCTION()
 		void HandleLoginUrlChange();
+
+	UFUNCTION()
+		void SetAveragePlayerLatency();
+
+	UFUNCTION()
+		void OnMatchmakingButtonClickd();
 
 	/// <summary>
 	/// 受信したresponseがエラーかどうかチェック

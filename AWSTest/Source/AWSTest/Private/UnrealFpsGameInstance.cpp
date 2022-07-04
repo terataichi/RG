@@ -7,11 +7,18 @@
 #include "JsonUtilities.h"
 #include "TextReaderComponent.h"
 
+namespace
+{
+	constexpr int MAX_PLAYERLATENCIE_NUM = 4;
+	constexpr float TIME_COEFFICIENT = 1000.0f;
+}
+
 UUnrealFpsGameInstance::UUnrealFpsGameInstance()
 {
 	UTextReaderComponent* textReader = CreateDefaultSubobject<UTextReaderComponent>(TEXT("TextReaderComp"));
 
 	apiUrl_ = textReader->ReadFile("Urls/ApiUrl.txt");
+	regionCode_ = textReader->ReadFile("Urls/RegionCode.txt");
 
 	httpModule_ = &FHttpModule::Get();
 }
@@ -33,14 +40,23 @@ void UUnrealFpsGameInstance::Shutdown()
 	}
 }
 
+void UUnrealFpsGameInstance::Init()
+{
+	Super::Init();
+
+	GetWorld()->GetTimerManager().SetTimer(responeTimeHandle_, this, &UUnrealFpsGameInstance::GetRsponseTime, 1.0f, true, 1.0f);
+}
+
+const TDoubleLinkedList<float>& UUnrealFpsGameInstance::GetPlayerLatencies()const
+{
+	return playerLatencies_;
+}
+
 void UUnrealFpsGameInstance::SetCognitoTokens(const FString& newAccessToken, const FString& newIdToken, const FString& newRefreshToken)
 {
 	accessToken_ = newAccessToken;
 	idToken_ = newIdToken;
 	refreshToken_ = newRefreshToken;
-
-	//UE_LOG(LogTemp, Warning, TEXT("access token: %s"), *accessToken_);
-	//UE_LOG(LogTemp, Warning, TEXT("refresh token: %s"), *refreshToken_);
 
 	GetWorld()->GetTimerManager().SetTimer(retrieveNewTokensHandle_, this, &UUnrealFpsGameInstance::RetrieveNewTokens, 1.0f, false, 3300.0f);
 
@@ -75,10 +91,20 @@ void UUnrealFpsGameInstance::RetrieveNewTokens()
 	}
 }
 
+void UUnrealFpsGameInstance::GetRsponseTime()
+{
+	auto responseTimeRequest = httpModule_->CreateRequest();
+	responseTimeRequest->OnProcessRequestComplete().BindUObject(this, &UUnrealFpsGameInstance::OnGetResponseTimeResponseReceived);
+	responseTimeRequest->SetURL("https://gamelift." + regionCode_ + ".amazonaws.com");
+	responseTimeRequest->SetVerb("GET");
+	responseTimeRequest->ProcessRequest();
+}
+
 void UUnrealFpsGameInstance::OnRetrieveNewTokensResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull)
 {
 	if (!bWasSuccessfull)
 	{
+		check(!"OnRetrieveNewTokensResponseReceived is not bWasSuccessfull");
 		return;
 	}
 	TSharedPtr<FJsonObject> jsonObject;
@@ -90,4 +116,24 @@ void UUnrealFpsGameInstance::OnRetrieveNewTokensResponseReceived(FHttpRequestPtr
 		return;
 	}
 	SetCognitoTokens(jsonObject->GetStringField("accessToken"), jsonObject->GetStringField("idToken"), refreshToken_);
+}
+
+void UUnrealFpsGameInstance::OnGetResponseTimeResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull)
+{
+	if (!bWasSuccessfull)
+	{
+		check(!"OnGetResponseTimeResponseReceived is not bWasSuccessfull");
+		return;
+	}
+
+	if (playerLatencies_.Num() >= MAX_PLAYERLATENCIE_NUM)
+	{
+		playerLatencies_.RemoveNode(playerLatencies_.GetHead());
+	}
+
+	float responseTime = request->GetElapsedTime() * TIME_COEFFICIENT;
+
+	//UE_LOG(LogTemp, Warning, TEXT("response time in milliseconds:  %s"), *FString::SanitizeFloat(responseTime));
+
+	playerLatencies_.AddTail(responseTime);
 }
