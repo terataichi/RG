@@ -52,6 +52,26 @@ const TDoubleLinkedList<float>& UUnrealFpsGameInstance::GetPlayerLatencies()cons
 	return playerLatencies_;
 }
 
+const FString& UUnrealFpsGameInstance::GetAccessToken() const
+{
+	return accessToken_;
+}
+
+const FString& UUnrealFpsGameInstance::GetIdToken() const
+{
+	return idToken_;
+}
+
+const FString& UUnrealFpsGameInstance::GetRefreshToken() const
+{
+	return refreshToken_;
+}
+
+const FString& UUnrealFpsGameInstance::GetMatchmakingTicketID() const
+{
+	return matchmakingTicketId_;
+}
+
 void UUnrealFpsGameInstance::SetCognitoTokens(const FString& newAccessToken, const FString& newIdToken, const FString& newRefreshToken)
 {
 	accessToken_ = newAccessToken;
@@ -59,8 +79,6 @@ void UUnrealFpsGameInstance::SetCognitoTokens(const FString& newAccessToken, con
 	refreshToken_ = newRefreshToken;
 
 	GetWorld()->GetTimerManager().SetTimer(retrieveNewTokensHandle_, this, &UUnrealFpsGameInstance::RetrieveNewTokens, 1.0f, false, 3300.0f);
-
-
 }
 
 void UUnrealFpsGameInstance::RetrieveNewTokens()
@@ -109,7 +127,7 @@ void UUnrealFpsGameInstance::OnRetrieveNewTokensResponseReceived(FHttpRequestPtr
 	}
 	TSharedPtr<FJsonObject> jsonObject;
 	auto reader = TJsonReaderFactory<>::Create(response->GetContentAsString());
-	if (!FJsonSerializer::Deserialize(reader,jsonObject) || jsonObject->HasField("error"))
+	if (!FJsonSerializer::Deserialize(reader,jsonObject) || jsonObject->HasField("error") || !jsonObject->HasField("accessToken") || !jsonObject->HasField("idToken"))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OnRetrieveNewTokensResponseReceived"));
 		GetWorld()->GetTimerManager().SetTimer(retrieveNewTokensHandle_, this, &UUnrealFpsGameInstance::RetrieveNewTokens, 1.0f, false, 30.0f);

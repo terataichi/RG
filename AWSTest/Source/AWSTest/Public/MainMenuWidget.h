@@ -42,6 +42,9 @@ private:
 		FString callbackUrl_;
 
 	UPROPERTY()
+		FString regionCode_;
+
+	UPROPERTY()
 		UWebBrowser* webBrowser_;
 
 	UPROPERTY()
@@ -72,7 +75,12 @@ private:
 		void SetAveragePlayerLatency();
 
 	UFUNCTION()
-		void OnMatchmakingButtonClickd();
+		void OnMatchmakingButtonClicked();
+
+
+	bool SendStopMatchmakingRequest(const FString& accessToken, const FString& matchmakingTicketId);
+
+	bool SendStartMatchmakingRequest(const FString& accessToken);
 
 	/// <summary>
 	/// 受信したresponseがエラーかどうかチェック
@@ -88,4 +96,8 @@ private:
 	void OnExchangeCodeForTokensResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull);
 
 	void OnGetPlayerDataResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull);
+
+	void OnStartMatchmakingResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull);
+
+	void OnStopMatchmakingResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull);
 };

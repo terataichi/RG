@@ -24,6 +24,22 @@ public:
 
 	const TDoubleLinkedList<float>& GetPlayerLatencies()const;
 
+	const FString& GetAccessToken()const;
+
+	const FString& GetIdToken()const;
+
+	const FString& GetRefreshToken()const;
+
+	const FString& GetMatchmakingTicketID()const;
+
+	UFUNCTION()
+		void SetCognitoTokens(const FString& newAccessToken,const FString& newIdToken, const FString& newRefreshToken);
+
+private:
+	FHttpModule* httpModule_;
+
+	TDoubleLinkedList<float> playerLatencies_;
+
 	UPROPERTY()
 		FString accessToken_;
 
@@ -34,18 +50,13 @@ public:
 		FString refreshToken_;
 
 	UPROPERTY()
+		FString matchmakingTicketId_;
+
+	UPROPERTY()
 		FTimerHandle retrieveNewTokensHandle_;
 
 	UPROPERTY()
 		FTimerHandle responeTimeHandle_;
-
-	UFUNCTION()
-		void SetCognitoTokens(const FString& newAccessToken,const FString& newIdToken, const FString& newRefreshToken);
-
-private:
-	FHttpModule* httpModule_;
-
-	TDoubleLinkedList<float> playerLatencies_;
 
 	UPROPERTY()
 		FString apiUrl_;

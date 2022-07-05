@@ -29,6 +29,7 @@ UMainMenuWidget::UMainMenuWidget(const FObjectInitializer& objectInitializer):
 
 	apiUrl_ = textReader->ReadFile("Urls/ApiUrl.txt");
 	callbackUrl_ = textReader->ReadFile("Urls/CallbackUrl.txt");
+	regionCode_ = textReader->ReadFile("Urls/RegionCode.txt");
 
 	httpModule_ = &FHttpModule::Get();
 
@@ -183,25 +184,130 @@ void UMainMenuWidget::SetAveragePlayerLatency()
 	pingTextBlock_->SetText(FText::FromString(pingString));
 }
 
-void UMainMenuWidget::OnMatchmakingButtonClickd()
+void UMainMenuWidget::OnMatchmakingButtonClicked()
 {
+	matchmakingButton_->SetIsEnabled(false);
+
+	UGameInstance* gameInstance = GetGameInstance();
+
+	if (gameInstance == nullptr)
+	{
+		check(!"gameInstanceÇ™nullptr");
+		return;
+	}
+
+	UUnrealFpsGameInstance* fpsGameInstance = Cast<UUnrealFpsGameInstance>(gameInstance);
+
+	if (fpsGameInstance == nullptr)
+	{
+		check(!"fpsGameInstanceÇ™nullptr");
+		return;
+	}
+
+	const FString& accessToken = fpsGameInstance->GetAccessToken();
+	const FString& matchmakingTicketID = fpsGameInstance->GetMatchmakingTicketID();
+
 	if (searchingForGame_)
 	{
 		searchingForGame_ = false;
-
+		if (SendStopMatchmakingRequest(accessToken, matchmakingTicketID))
+		{
+			return;
+		}
+		// ëóêMÇ…é∏îsÇµÇΩÇ∆Ç´ÇÕë“ã@èÛë‘Ç…ñﬂÇ∑
 		UTextBlock* buttonTextBlock = Cast<UTextBlock>(matchmakingButton_->GetChildAt(0));
 		buttonTextBlock->SetText(FText::FromString("Join Game"));
 		matchmakingEventTextBlock_->SetText(FText::FromString(""));
+
+		matchmakingButton_->SetIsEnabled(true);
 	}
 	else
 	{
 		searchingForGame_ = true;
+		if (SendStartMatchmakingRequest(accessToken))
+		{
+			return;
+		}
+
+		matchmakingButton_->SetIsEnabled(true);
 
 		UTextBlock* buttonTextBlock = Cast<UTextBlock>(matchmakingButton_->GetChildAt(0));
 		buttonTextBlock->SetText(FText::FromString("Cancel Matchmaking"));
 		matchmakingEventTextBlock_->SetText(FText::FromString("Currently looking for a match"));
 	}
 }
+
+bool UMainMenuWidget::SendStopMatchmakingRequest(const FString& accessToken, const FString& matchmakingTicketId)
+{
+	if (accessToken.Len() < 0 && matchmakingTicketId.Len() < 0)
+	{
+		check(!"tokenÇ™ë∂ç›ÇµÇ»Ç¢");
+		return false;
+	}
+
+	TSharedPtr<FJsonObject> requestObject = MakeShareable(new FJsonObject);
+	requestObject->SetStringField("ticketId", matchmakingTicketId);
+
+	FString requestBody;
+
+	auto writer = TJsonWriterFactory<>::Create(&requestBody);
+
+	if (!FJsonSerializer::Serialize(requestObject.ToSharedRef(), writer))
+	{
+		check(!"Serializeé∏îs");
+		return false;
+	}
+
+	auto stopMatchmakingRequest = httpModule_->CreateRequest();
+	stopMatchmakingRequest->OnProcessRequestComplete().BindUObject(this, UMainMenuWidget::OnStopMatchmakingResponseReceived);
+	stopMatchmakingRequest->SetURL(apiUrl_ + "/stopmatchmaking");
+	stopMatchmakingRequest->SetVerb("POST");
+	stopMatchmakingRequest->SetHeader("Content-Type", "application/json");
+	stopMatchmakingRequest->SetHeader("Autorization", accessToken);
+	stopMatchmakingRequest->SetContentAsString(requestBody);
+	stopMatchmakingRequest->ProcessRequest();
+
+	return true;
+}
+
+bool UMainMenuWidget::SendStartMatchmakingRequest(const FString& accessToken)
+{
+	if (accessToken.Len() < 0)
+	{
+		check(!"tokenÇ™ë∂ç›ÇµÇ»Ç¢");
+		return false;
+	}
+
+	TSharedPtr<FJsonObject> latencyMapObject = MakeShareable(new FJsonObject);
+
+	latencyMapObject->SetNumberField(regionCode_, averagePlayerLatency_);
+
+	TSharedPtr<FJsonObject> requestObject = MakeShareable(new FJsonObject);
+	requestObject->SetObjectField("latencyMap", latencyMapObject);
+
+	FString requestBody;
+
+	auto writer = TJsonWriterFactory<>::Create(&requestBody);
+
+	if (!FJsonSerializer::Serialize(requestObject.ToSharedRef(), writer))
+	{
+		check(!"Serializeé∏îs");
+		return false;
+	}
+
+	auto startMatchmakingRequest = httpModule_->CreateRequest();
+	startMatchmakingRequest->OnProcessRequestComplete().BindUObject(this, UMainMenuWidget::OnStartMatchmakingResponseReceived);
+	startMatchmakingRequest->SetURL(apiUrl_ + "/startmatchmaking");
+	startMatchmakingRequest->SetVerb("POST");
+	startMatchmakingRequest->SetHeader("Content-Type", "application/json");
+	startMatchmakingRequest->SetHeader("Autorization", accessToken);
+	startMatchmakingRequest->SetContentAsString(requestBody);
+	startMatchmakingRequest->ProcessRequest();
+
+	return true;
+}
+
+
 
 void UMainMenuWidget::PlayerDataReques(const FString& accessToken)
 {
@@ -230,6 +336,12 @@ void UMainMenuWidget::OnExchangeCodeForTokensResponseReceived(FHttpRequestPtr re
 		return;
 	}
 	TSharedPtr<FJsonObject> jsonObject = checkJson.second;
+
+	if (!jsonObject->HasField("access_token") || !jsonObject->HasField("id_token") || !jsonObject->HasField("refresh_token"))
+	{
+		check(!"OnExchangeCodeForTokensResponseReceivedÇ≈ÇÃéÛêMÉGÉâÅ[");
+		return;
+	}
 
 	UGameInstance* gameInstance = GetGameInstance();
 
@@ -272,7 +384,14 @@ void UMainMenuWidget::OnGetPlayerDataResponseReceived(FHttpRequestPtr request, F
 		check(!"error");
 		return;
 	}
+
 	TSharedPtr<FJsonObject> jsonObject = checkJson.second;
+
+	if (!jsonObject->HasField("playerData"))
+	{
+		check(!"p;ayerDataÇ≈ÇÕÇ»Ç¢");
+		return;
+	}
 
 	TSharedPtr<FJsonObject> playerData = jsonObject->GetObjectField("playerData");
 	TSharedPtr<FJsonObject> winsData = playerData->GetObjectField("Wins");
@@ -294,4 +413,13 @@ void UMainMenuWidget::OnGetPlayerDataResponseReceived(FHttpRequestPtr request, F
 	lossesTextBlock_->SetVisibility(ESlateVisibility::Visible);
 	pingTextBlock_->SetVisibility(ESlateVisibility::Visible);
 	matchmakingEventTextBlock_->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UMainMenuWidget::OnStartMatchmakingResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull)
+{
+
+}
+
+void UMainMenuWidget::OnStopMatchmakingResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull)
+{
 }
