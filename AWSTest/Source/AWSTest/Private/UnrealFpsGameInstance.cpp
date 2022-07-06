@@ -72,6 +72,11 @@ const FString& UUnrealFpsGameInstance::GetMatchmakingTicketID() const
 	return matchmakingTicketId_;
 }
 
+void UUnrealFpsGameInstance::SetMatchmakingTicketID(const FString& ticketId)
+{
+	matchmakingTicketId_ = ticketId;
+}
+
 void UUnrealFpsGameInstance::SetCognitoTokens(const FString& newAccessToken, const FString& newIdToken, const FString& newRefreshToken)
 {
 	accessToken_ = newAccessToken;

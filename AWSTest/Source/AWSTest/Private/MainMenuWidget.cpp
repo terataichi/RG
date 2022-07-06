@@ -229,12 +229,32 @@ void UMainMenuWidget::OnMatchmakingButtonClicked()
 			return;
 		}
 
-		matchmakingButton_->SetIsEnabled(true);
-
 		UTextBlock* buttonTextBlock = Cast<UTextBlock>(matchmakingButton_->GetChildAt(0));
 		buttonTextBlock->SetText(FText::FromString("Cancel Matchmaking"));
 		matchmakingEventTextBlock_->SetText(FText::FromString("Currently looking for a match"));
+
+		matchmakingButton_->SetIsEnabled(true);
 	}
+}
+
+UUnrealFpsGameInstance* UMainMenuWidget::GetFpsGameInstance()
+{
+	UGameInstance* gameInstance = GetGameInstance();
+
+	if (gameInstance == nullptr)
+	{
+		check(!"gameInstanceがnullptr");
+		return nullptr;
+	}
+
+	UUnrealFpsGameInstance* fpsGameInstance = Cast<UUnrealFpsGameInstance>(gameInstance);
+
+	if (fpsGameInstance == nullptr)
+	{
+		check(!"UUnrealFpsGameInstanceへのキャスト失敗");
+		return nullptr;
+	}
+	return fpsGameInstance;
 }
 
 bool UMainMenuWidget::SendStopMatchmakingRequest(const FString& accessToken, const FString& matchmakingTicketId)
@@ -259,11 +279,11 @@ bool UMainMenuWidget::SendStopMatchmakingRequest(const FString& accessToken, con
 	}
 
 	auto stopMatchmakingRequest = httpModule_->CreateRequest();
-	stopMatchmakingRequest->OnProcessRequestComplete().BindUObject(this, UMainMenuWidget::OnStopMatchmakingResponseReceived);
+	stopMatchmakingRequest->OnProcessRequestComplete().BindUObject(this, &UMainMenuWidget::OnStopMatchmakingResponseReceived);
 	stopMatchmakingRequest->SetURL(apiUrl_ + "/stopmatchmaking");
 	stopMatchmakingRequest->SetVerb("POST");
 	stopMatchmakingRequest->SetHeader("Content-Type", "application/json");
-	stopMatchmakingRequest->SetHeader("Autorization", accessToken);
+	stopMatchmakingRequest->SetHeader("Authorization", accessToken);
 	stopMatchmakingRequest->SetContentAsString(requestBody);
 	stopMatchmakingRequest->ProcessRequest();
 
@@ -296,11 +316,11 @@ bool UMainMenuWidget::SendStartMatchmakingRequest(const FString& accessToken)
 	}
 
 	auto startMatchmakingRequest = httpModule_->CreateRequest();
-	startMatchmakingRequest->OnProcessRequestComplete().BindUObject(this, UMainMenuWidget::OnStartMatchmakingResponseReceived);
+	startMatchmakingRequest->OnProcessRequestComplete().BindUObject(this, &UMainMenuWidget::OnStartMatchmakingResponseReceived);
 	startMatchmakingRequest->SetURL(apiUrl_ + "/startmatchmaking");
 	startMatchmakingRequest->SetVerb("POST");
 	startMatchmakingRequest->SetHeader("Content-Type", "application/json");
-	startMatchmakingRequest->SetHeader("Autorization", accessToken);
+	startMatchmakingRequest->SetHeader("Authorization", accessToken);
 	startMatchmakingRequest->SetContentAsString(requestBody);
 	startMatchmakingRequest->ProcessRequest();
 
@@ -343,21 +363,7 @@ void UMainMenuWidget::OnExchangeCodeForTokensResponseReceived(FHttpRequestPtr re
 		return;
 	}
 
-	UGameInstance* gameInstance = GetGameInstance();
-
-	if (gameInstance == nullptr)
-	{
-		check(!"gameInstanceがnullptr");
-		return;
-	}
-
-	UUnrealFpsGameInstance* fpsGameInstance = Cast<UUnrealFpsGameInstance>(gameInstance);
-
-	if (fpsGameInstance == nullptr)
-	{
-		check(!"UUnrealFpsGameInstanceへのキャスト失敗");
-		return;
-	}
+	UUnrealFpsGameInstance* fpsGameInstance = GetFpsGameInstance();
 
 	FString accessToken = jsonObject->GetStringField("access_token");
 	FString idToken = jsonObject->GetStringField("id_token");
@@ -417,9 +423,72 @@ void UMainMenuWidget::OnGetPlayerDataResponseReceived(FHttpRequestPtr request, F
 
 void UMainMenuWidget::OnStartMatchmakingResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull)
 {
+	matchmakingButton_->SetIsEnabled(true);
+	if (!bWasSuccessfull)
+	{
+		check(!"OnStartMatchmakingResponseReceived is not bWasSuccessfull");
+		return;
+	}
+	auto checkJson = CheckJsonError(response);
+
+	if (checkJson.first)
+	{
+		check(!"error");
+		return;
+	}
+
+	TSharedPtr<FJsonObject> jsonObject = checkJson.second;
+
+	if (!jsonObject->HasField("ticketId"))
+	{
+		check(!"ticketIdが存在しない");
+		return;
+	}
+
+	FString matchmakingTicketId = jsonObject->GetStringField("ticketId");
+
+	UUnrealFpsGameInstance* fpsGameInstance = GetFpsGameInstance();
+
+	fpsGameInstance->SetMatchmakingTicketID(matchmakingTicketId);
+
+	searchingForGame_ = true;
+
+	UTextBlock* buttonTextBlock = Cast<UTextBlock>(matchmakingButton_->GetChildAt(0));
+	buttonTextBlock->SetText(FText::FromString("Cancel Matchmaking"));
+	matchmakingEventTextBlock_->SetText(FText::FromString("Currently looking for a match"));
 
 }
 
 void UMainMenuWidget::OnStopMatchmakingResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull)
 {
+
+	UTextBlock* buttonTextBlock = Cast<UTextBlock>(matchmakingButton_->GetChildAt(0));
+	buttonTextBlock->SetText(FText::FromString("Join Game"));
+	matchmakingEventTextBlock_->SetText(FText::FromString(""));
+
+	matchmakingButton_->SetIsEnabled(true);
+	if (!bWasSuccessfull)
+	{
+		check(!"OnStartMatchmakingResponseReceived is not bWasSuccessfull");
+		return;
+	}
+	auto checkJson = CheckJsonError(response);
+
+	if (checkJson.first)
+	{
+		check(!"error");
+		return;
+	}
+
+	TSharedPtr<FJsonObject> jsonObject = checkJson.second;
+
+	if (!jsonObject->HasField("success"))
+	{
+		check(!"not success");
+		return;
+	}
+
+	UUnrealFpsGameInstance* fpsGameInstance = GetFpsGameInstance();
+
+	fpsGameInstance->SetMatchmakingTicketID("");
 }

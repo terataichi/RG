@@ -12,6 +12,7 @@ class UWebBrowser;
 class UButton;
 class UTextBlock;
 class FJsonObject;
+class UUnrealFpsGameInstance;
 
 /**
  * 
@@ -77,6 +78,11 @@ private:
 	UFUNCTION()
 		void OnMatchmakingButtonClicked();
 
+	/// <summary>
+	/// UnrealFpsGameInstanceへのポインタの獲得。nullcheck済み
+	/// </summary>
+	/// <returns>gameInstanceへのポインタ</returns>
+	UUnrealFpsGameInstance* GetFpsGameInstance();
 
 	bool SendStopMatchmakingRequest(const FString& accessToken, const FString& matchmakingTicketId);
 
