@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{48E30D10-4E15-6958-C852-518517CBD0CD}",
+	"EngineAssociation": "{769F39F7-4160-B247-2C7A-91AC87F5BD76}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -17,6 +17,16 @@
 		{
 			"Name": "GameLiftServerSDK",
 			"Enabled": true
+		},
+		{
+			"Name": "LPSPSample",
+			"Enabled": true,
+			"MarketplaceURL": "https://www.unrealengine.com/marketplace/en-US/product/99747f977c16453eb270bcc0d78c3dd4"
+		},
+		{
+			"Name": "MoveIt",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/1b8d6e55c50b4b189f283cbbe3d266d9"
 		}
 	]
 }

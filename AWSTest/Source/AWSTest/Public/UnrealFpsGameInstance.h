@@ -32,6 +32,8 @@ public:
 
 	const FString& GetMatchmakingTicketID()const;
 
+	void SetMatchmakingTicketID(const FString& ticketId);
+
 	UFUNCTION()
 		void SetCognitoTokens(const FString& newAccessToken,const FString& newIdToken, const FString& newRefreshToken);
 
