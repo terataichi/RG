@@ -24,12 +24,11 @@ class AWSTEST_API UMainMenuWidget : public UUserWidget
 
 public:
 	UMainMenuWidget(const FObjectInitializer& objectInitializer);
-
-	UPROPERTY()
-		FTimerHandle averagePlayerLatencyHandle_;
 	
 protected:
 	virtual void NativeConstruct()override;
+
+	virtual void NativeDestruct()override;
 private:
 	FHttpModule* httpModule_;
 
@@ -64,6 +63,12 @@ private:
 		UTextBlock* matchmakingEventTextBlock_;
 
 	UPROPERTY()
+		FTimerHandle averagePlayerLatencyHandle_;
+
+	UPROPERTY()
+		FTimerHandle pollMatchmakingHandle_;
+
+	UPROPERTY()
 		float averagePlayerLatency_;
 
 	UPROPERTY()
@@ -77,6 +82,9 @@ private:
 
 	UFUNCTION()
 		void OnMatchmakingButtonClicked();
+
+	UFUNCTION()
+		void PollMatchmaking();
 
 	/// <summary>
 	/// UnrealFpsGameInstanceへのポインタの獲得。nullcheck済み
@@ -106,4 +114,6 @@ private:
 	void OnStartMatchmakingResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull);
 
 	void OnStopMatchmakingResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull);
+
+	void OnPollMatchmakingResponceReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull);
 };
