@@ -15,6 +15,8 @@
 #include "Json.h"
 #include "JsonUtilities.h"
 
+#include "Kismet/GameplayStatics.h"
+
 namespace
 {
 	constexpr float DEFAULT_PLAYERLATENCY = 60.0f;
@@ -40,7 +42,7 @@ UMainMenuWidget::UMainMenuWidget(const FObjectInitializer& objectInitializer):
 
 void UMainMenuWidget::NativeConstruct()
 {
-	UUserWidget::NativeConstruct();
+	Super::NativeConstruct();
 	bIsFocusable = true;
 
 	InitWidgets();
@@ -51,27 +53,45 @@ void UMainMenuWidget::NativeConstruct()
 
 	GetWorld()->GetTimerManager().SetTimer(averagePlayerLatencyHandle_, this, &UMainMenuWidget::SetAveragePlayerLatency, 1.0f, true, 1.0f);
 
-	IWebBrowserSingleton* webBrowserSinglton = IWebBrowserModule::Get().GetSingleton();
-	
-	if (webBrowserSinglton == nullptr)
-	{
-		check(!"webBrowserSingltonÇ™nullptr");
-	}
-	TOptional<FString> defaultContext;
-	TSharedPtr<IWebBrowserCookieManager> cookieManager = webBrowserSinglton->GetCookieManager(defaultContext);
-	if (!cookieManager.IsValid())
-	{
-		check(!"IWebBrowserCookieManagerÇ™ñ≥å¯");
-	}
-	cookieManager->DeleteCookies();
+	auto fpsGameInstance = GetFpsGameInstance();
 
-	webBrowser_->LoadURL(loginUrl_);
+	const FString& accessToken = fpsGameInstance->GetAccessToken();
 
-	FScriptDelegate loginDelegate;
-	loginDelegate.BindUFunction(this, "HandleLoginUrlChange");
-	webBrowser_->OnUrlChanged.Add(loginDelegate);
+	if (accessToken.Len() > 0)
+	{
+		PlayerDataReques(accessToken);
+	}
+	else
+	{
+		IWebBrowserSingleton* webBrowserSinglton = IWebBrowserModule::Get().GetSingleton();
+
+		if (webBrowserSinglton == nullptr)
+		{
+			check(!"webBrowserSingltonÇ™nullptr");
+		}
+		TOptional<FString> defaultContext;
+		TSharedPtr<IWebBrowserCookieManager> cookieManager = webBrowserSinglton->GetCookieManager(defaultContext);
+		if (!cookieManager.IsValid())
+		{
+			check(!"IWebBrowserCookieManagerÇ™ñ≥å¯");
+		}
+		cookieManager->DeleteCookies();
+
+		webBrowser_->LoadURL(loginUrl_);
+
+		FScriptDelegate loginDelegate;
+		loginDelegate.BindUFunction(this, "HandleLoginUrlChange");
+		webBrowser_->OnUrlChanged.Add(loginDelegate);
+	}
 
 	UE_LOG(LogTemp, Log, TEXT("UMainMenuWidget:NativeConstruct"));
+}
+
+void UMainMenuWidget::NativeDestruct()
+{
+	GetWorld()->GetTimerManager().ClearTimer(pollMatchmakingHandle_);
+	GetWorld()->GetTimerManager().ClearTimer(averagePlayerLatencyHandle_);
+	Super::NativeDestruct();
 }
 
 std::pair<bool, TSharedPtr<FJsonObject>> UMainMenuWidget::CheckJsonError(FHttpResponsePtr response)
@@ -188,27 +208,14 @@ void UMainMenuWidget::OnMatchmakingButtonClicked()
 {
 	matchmakingButton_->SetIsEnabled(false);
 
-	UGameInstance* gameInstance = GetGameInstance();
-
-	if (gameInstance == nullptr)
-	{
-		check(!"gameInstanceÇ™nullptr");
-		return;
-	}
-
-	UUnrealFpsGameInstance* fpsGameInstance = Cast<UUnrealFpsGameInstance>(gameInstance);
-
-	if (fpsGameInstance == nullptr)
-	{
-		check(!"fpsGameInstanceÇ™nullptr");
-		return;
-	}
+	UUnrealFpsGameInstance* fpsGameInstance = GetFpsGameInstance();
 
 	const FString& accessToken = fpsGameInstance->GetAccessToken();
 	const FString& matchmakingTicketID = fpsGameInstance->GetMatchmakingTicketID();
 
 	if (searchingForGame_)
 	{
+		GetWorld()->GetTimerManager().ClearTimer(pollMatchmakingHandle_);
 		searchingForGame_ = false;
 		if (SendStopMatchmakingRequest(accessToken, matchmakingTicketID))
 		{
@@ -235,6 +242,47 @@ void UMainMenuWidget::OnMatchmakingButtonClicked()
 
 		matchmakingButton_->SetIsEnabled(true);
 	}
+}
+
+void UMainMenuWidget::PollMatchmaking()
+{
+	if (!searchingForGame_)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PoolMatchmaking not searchingForGame"));
+		return;
+	}
+	auto fpsGameInstance = GetFpsGameInstance();
+
+	const FString& accessToken = fpsGameInstance->GetAccessToken();
+	const FString& matchmakingTicketId = fpsGameInstance->GetMatchmakingTicketID();
+
+	if (accessToken.Len() < 0 || matchmakingTicketId.Len() < 0)
+	{
+		check(!"tokenÇ™ë∂ç›ÇµÇ»Ç¢");
+		return;
+	}
+
+	TSharedPtr<FJsonObject> requestObject = MakeShareable(new FJsonObject);
+	requestObject->SetStringField("ticketId", matchmakingTicketId);
+
+	FString requestBody;
+	auto witer = TJsonWriterFactory<>::Create(&requestBody);
+
+	if (!FJsonSerializer::Serialize(requestObject.ToSharedRef(),witer))
+	{
+		check(!"Serializeé∏îs");
+		return;
+	}
+
+	auto pollMatchmakingRequest = httpModule_->CreateRequest();
+
+	pollMatchmakingRequest->OnProcessRequestComplete().BindUObject(this, &UMainMenuWidget::OnPollMatchmakingResponceReceived);
+	pollMatchmakingRequest->SetURL(apiUrl_ + "/pollmatchmaking");
+	pollMatchmakingRequest->SetVerb("POST");
+	pollMatchmakingRequest->SetHeader("Content-Type", "application/json");
+	pollMatchmakingRequest->SetHeader("Authorization", accessToken);
+	pollMatchmakingRequest->SetContentAsString(requestBody);
+	pollMatchmakingRequest->ProcessRequest();
 }
 
 UUnrealFpsGameInstance* UMainMenuWidget::GetFpsGameInstance()
@@ -335,6 +383,7 @@ void UMainMenuWidget::PlayerDataReques(const FString& accessToken)
 	getPlayerDataRequest->OnProcessRequestComplete().BindUObject(this, &UMainMenuWidget::OnGetPlayerDataResponseReceived);
 	getPlayerDataRequest->SetURL(apiUrl_ + "/getplayerdata");
 	getPlayerDataRequest->SetVerb("GET");
+	getPlayerDataRequest->SetHeader("Content-Type", "application/json");
 	getPlayerDataRequest->SetHeader("Authorization", accessToken);
 	getPlayerDataRequest->ProcessRequest();
 }
@@ -451,6 +500,8 @@ void UMainMenuWidget::OnStartMatchmakingResponseReceived(FHttpRequestPtr request
 
 	fpsGameInstance->SetMatchmakingTicketID(matchmakingTicketId);
 
+	GetWorld()->GetTimerManager().SetTimer(pollMatchmakingHandle_, this, &UMainMenuWidget::PollMatchmaking, 1.0f, true, 1.0f);
+
 	searchingForGame_ = true;
 
 	UTextBlock* buttonTextBlock = Cast<UTextBlock>(matchmakingButton_->GetChildAt(0));
@@ -467,9 +518,22 @@ void UMainMenuWidget::OnStopMatchmakingResponseReceived(FHttpRequestPtr request,
 	matchmakingEventTextBlock_->SetText(FText::FromString(""));
 
 	matchmakingButton_->SetIsEnabled(true);
+
+	UUnrealFpsGameInstance* fpsGameInstance = GetFpsGameInstance();
+
+	fpsGameInstance->SetMatchmakingTicketID("");
+}
+
+void UMainMenuWidget::OnPollMatchmakingResponceReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull)
+{
+	if (!searchingForGame_)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OnPollMatchmakingResponceReceived not searchingForGame"));
+		return;
+	}
 	if (!bWasSuccessfull)
 	{
-		check(!"OnStartMatchmakingResponseReceived is not bWasSuccessfull");
+		check(!"OnPollMatchmakingResponceReceived is not bWasSuccessfull");
 		return;
 	}
 	auto checkJson = CheckJsonError(response);
@@ -482,13 +546,53 @@ void UMainMenuWidget::OnStopMatchmakingResponseReceived(FHttpRequestPtr request,
 
 	TSharedPtr<FJsonObject> jsonObject = checkJson.second;
 
-	if (!jsonObject->HasField("success"))
+	if (!jsonObject->HasField("ticket"))
 	{
-		check(!"not success");
+		//check(!"ticketÇ™ë∂ç›ÇµÇ»Ç¢");
 		return;
 	}
+
+	TSharedPtr<FJsonObject> ticket = jsonObject->GetObjectField("ticket");
+	FString ticketType = ticket->GetObjectField("Type")->GetStringField("S");
+
+	if (ticketType.Len() < 0)
+	{
+		check(!"ticketTypeÇ™ë∂ç›ÇµÇ»Ç¢");
+		return;
+	}
+
+	GetWorld()->GetTimerManager().ClearTimer(pollMatchmakingHandle_);
+	searchingForGame_ = false;
 
 	UUnrealFpsGameInstance* fpsGameInstance = GetFpsGameInstance();
 
 	fpsGameInstance->SetMatchmakingTicketID("");
+
+	if (ticketType.Equals("MatchmakingSucceeded"))
+	{
+		matchmakingButton_->SetIsEnabled(false);
+		matchmakingEventTextBlock_->SetText(FText::FromString("Successfully found a match. Now connecting to the server..."));
+
+		TSharedPtr<FJsonObject> gameSessionInfo = ticket->GetObjectField("GameSessionInfo")->GetObjectField("M");
+		FString ipAddress = gameSessionInfo->GetObjectField("IpAddress")->GetStringField("S");
+		FString port = gameSessionInfo->GetObjectField("Port")->GetStringField("N");
+
+		TArray<TSharedPtr<FJsonValue>> players = ticket->GetObjectField("Players")->GetArrayField("L");
+		TSharedPtr<FJsonObject> player = players[0]->AsObject()->GetObjectField("M");
+		FString playerSessionId = player->GetObjectField("PlayerSessionId")->GetStringField("S");
+		FString playerId = player->GetObjectField("PlayerId")->GetStringField("S");
+
+		FString levelName = ipAddress + ":" + port;
+		const FString& option = "?PlayerSessionId=" + playerSessionId + "?PlayerId" + playerId;
+
+		UE_LOG(LogTemp, Warning, TEXT("options: %s"), *option);
+
+		UGameplayStatics::OpenLevel(GetWorld(), FName(*levelName), false, option);
+	}
+	else
+	{
+		UTextBlock* buttonTextBlock = Cast<UTextBlock>(matchmakingButton_->GetChildAt(0));
+		buttonTextBlock->SetText(FText::FromString("Join Game"));
+		matchmakingEventTextBlock_->SetText(FText::FromString(ticketType + ". Please try again"));
+	}
 }
