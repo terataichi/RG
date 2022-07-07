@@ -72,6 +72,8 @@ private:
 	UFUNCTION()
 		void GetRsponseTime();
 
+	void EndMatchmaking();
+
 	void OnRetrieveNewTokensResponseReceived(FHttpRequestPtr request,FHttpResponsePtr response,bool bWasSuccessfull);
 	void OnGetResponseTimeResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull);
 };

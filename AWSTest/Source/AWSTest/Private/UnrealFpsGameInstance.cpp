@@ -26,11 +26,18 @@ UUnrealFpsGameInstance::UUnrealFpsGameInstance()
 
 void UUnrealFpsGameInstance::Shutdown()
 {
-	UGameInstance::Shutdown();
+
+	GetWorld()->GetTimerManager().ClearTimer(retrieveNewTokensHandle_);
+	GetWorld()->GetTimerManager().ClearTimer(responeTimeHandle_);
 
 	// accessToken‚Ì–³Œø‰»ˆË—Š
 	if (accessToken_.Len() > 0)
 	{
+		// matchmakingI—¹ˆ—
+		if (matchmakingTicketId_.Len() > 0)
+		{
+			EndMatchmaking();
+		}
 		auto invalidateTokenRequest = httpModule_->CreateRequest();
 		invalidateTokenRequest->SetURL(apiUrl_ + "/invalidatetokens");
 		invalidateTokenRequest->SetVerb("Get");
@@ -38,6 +45,7 @@ void UUnrealFpsGameInstance::Shutdown()
 		invalidateTokenRequest->SetHeader("Authorization", accessToken_);
 		invalidateTokenRequest->ProcessRequest();
 	}
+	Super::Shutdown();
 }
 
 void UUnrealFpsGameInstance::Init()
@@ -121,6 +129,29 @@ void UUnrealFpsGameInstance::GetRsponseTime()
 	responseTimeRequest->SetURL("https://gamelift." + regionCode_ + ".amazonaws.com");
 	responseTimeRequest->SetVerb("GET");
 	responseTimeRequest->ProcessRequest();
+}
+
+void UUnrealFpsGameInstance::EndMatchmaking()
+{
+	TSharedPtr<FJsonObject> requestObject = MakeShareable(new FJsonObject);
+	requestObject->SetStringField("ticketId", matchmakingTicketId_);
+
+	FString requestBody;
+
+	auto writer = TJsonWriterFactory<>::Create(&requestBody);
+
+	if (!FJsonSerializer::Serialize(requestObject.ToSharedRef(), writer))
+	{
+		check(!"SerializeŽ¸”s");
+		return;
+	}
+	auto stopMatchmakingRequest = httpModule_->CreateRequest();
+	stopMatchmakingRequest->SetURL(apiUrl_ + "/stopmatchmaking");
+	stopMatchmakingRequest->SetVerb("POST");
+	stopMatchmakingRequest->SetHeader("Content-Type", "application/json");
+	stopMatchmakingRequest->SetHeader("Authorization", accessToken_);
+	stopMatchmakingRequest->SetContentAsString(requestBody);
+	stopMatchmakingRequest->ProcessRequest();
 }
 
 void UUnrealFpsGameInstance::OnRetrieveNewTokensResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool bWasSuccessfull)
