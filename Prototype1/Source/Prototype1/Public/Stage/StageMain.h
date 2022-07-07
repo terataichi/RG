@@ -37,10 +37,10 @@ public:
 	// 設置命令
 	// あとでアイテムリストももらうようにする
 	UFUNCTION(BlueprintCallable, Category = "StageF")
-	void Put(const int32& spaceNum);
+	bool Put(const int32& spaceNum,const AActor* Obj);
 	// 撤去命令
 	UFUNCTION(BlueprintCallable, Category = "StageF")
-	void Take(const int32& spaceNum);
+	AActor* Take(const int32& spaceNum);
 
 	// 撤去命令
 	UFUNCTION(BlueprintCallable, Category = "StageF")

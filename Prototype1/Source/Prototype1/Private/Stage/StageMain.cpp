@@ -109,22 +109,22 @@ FVector2D AStageMain::SpaceToXY(const int32& spaceNum)
 	return FVector2D(X,Y);
 }
 
-void AStageMain::Put(const int32& spaceNum)
+bool AStageMain::Put(const int32& spaceNum, const AActor* Obj)
 {
 	// ガード処理
 	if (spaceNum == -1)
 	{
-		return;
+		return false;
 	}
 	// 何も設置されてなかったら設置する
 	if (spaceState_[spaceNum].first != StageSpaceState::NotPut)
 	{
-		return;
+		return false;
 	}
 
 	if (subClass_ == nullptr)
 	{
-		return;
+		return false;
 	}
 
 	// 番号をマス目に変換
@@ -145,40 +145,19 @@ void AStageMain::Put(const int32& spaceNum)
 	spaceState_[spaceNum].second->SetActorLocation(putPos);
 
 	UE_LOG(LogTemp, Display, TEXT("Put"));
+	return true;
 }
 
-void AStageMain::Take(const int32& spaceNum)
+AActor* AStageMain::Take(const int32& spaceNum)
 {
 	// ガード処理
-	if (spaceNum == -1)
+	if (spaceNum != -1 && spaceState_[spaceNum].first != StageSpaceState::Put)
 	{
-		return;
-	}
-	// 置かれているか確認
-	if (spaceState_[spaceNum].first != StageSpaceState::Put)
-	{
-		return;
-	}
-
-	// 何か設置されていたら削除する
-	if (GetWorld()->DestroyActor(spaceState_[spaceNum].second))
-	{
+		// 何か設置されていたら削除する
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, TEXT("take"));
 		spaceState_[spaceNum].first = StageSpaceState::NotPut;
+		return spaceState_[spaceNum].second;
 	}
-
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, TEXT("take"));
-	
+	return nullptr;
 }
-
-//int32 AStageMain::AddPlayer(UPARAM(ref) int32& myID)
-//{
-//	playersNum_.push_back({ -1, {} });
-//
-//	myID = playersNum_.size() - 1;
-//	int32 id = myID;
-//
-//	UE_LOG(LogTemp, Display, TEXT("AddPlayer : %d"), id);
-//	return id;
-//}
 
