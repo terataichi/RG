@@ -41,7 +41,7 @@ void UUnrealFpsGameInstance::Shutdown()
 		auto invalidateTokenRequest = httpModule_->CreateRequest();
 		invalidateTokenRequest->SetURL(apiUrl_ + "/invalidatetokens");
 		invalidateTokenRequest->SetVerb("Get");
-		invalidateTokenRequest->SetHeader("Content-Type", "application/json");
+		//invalidateTokenRequest->SetHeader("Content-Type", "application/json");
 		invalidateTokenRequest->SetHeader("Authorization", accessToken_);
 		invalidateTokenRequest->ProcessRequest();
 	}

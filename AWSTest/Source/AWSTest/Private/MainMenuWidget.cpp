@@ -383,7 +383,7 @@ void UMainMenuWidget::PlayerDataReques(const FString& accessToken)
 	getPlayerDataRequest->OnProcessRequestComplete().BindUObject(this, &UMainMenuWidget::OnGetPlayerDataResponseReceived);
 	getPlayerDataRequest->SetURL(apiUrl_ + "/getplayerdata");
 	getPlayerDataRequest->SetVerb("GET");
-	getPlayerDataRequest->SetHeader("Content-Type", "application/json");
+	//getPlayerDataRequest->SetHeader("Content-Type", "application/json");
 	getPlayerDataRequest->SetHeader("Authorization", accessToken);
 	getPlayerDataRequest->ProcessRequest();
 }
