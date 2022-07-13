@@ -91,7 +91,7 @@ int32 AStageMain::GetSpaceNum(const FVector& impactPoint)
 	// マス目の計算
 	int32 num = Y * divisionNumMAX_.X + X;
 
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, FString::FromInt(num));
+	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, FString::FromInt(num));
 
 	return  num;
 }
@@ -109,7 +109,7 @@ FVector2D AStageMain::SpaceToXY(const int32& spaceNum)
 	return FVector2D(X,Y);
 }
 
-bool AStageMain::Put(const int32& spaceNum, const AActor* Obj)
+bool AStageMain::Put(const int32& spaceNum, AActor* Obj)
 {
 	// ガード処理
 	if (spaceNum == -1)
@@ -122,7 +122,7 @@ bool AStageMain::Put(const int32& spaceNum, const AActor* Obj)
 		return false;
 	}
 
-	if (subClass_ == nullptr)
+	if (Obj == nullptr)
 	{
 		return false;
 	}
@@ -141,8 +141,16 @@ bool AStageMain::Put(const int32& spaceNum, const AActor* Obj)
 	};
 	spaceState_[spaceNum].first = StageSpaceState::Put;
 
-	spaceState_[spaceNum].second = GetWorld()->SpawnActor<AActor>(subClass_);
+	//auto Component = Obj->GetComponentByClass(USceneComponent::StaticClass());
+	//USceneComponent* MyComponent = Cast<USceneComponent>(Component);
+	//MyComponent->GetDefaultSceneRootVariableName();
+	//MyComponent->SetHiddenInGame(false);
+
+	spaceState_[spaceNum].second = Obj;
 	spaceState_[spaceNum].second->SetActorLocation(putPos);
+	spaceState_[spaceNum].second->SetHidden(false);
+	spaceState_[spaceNum].second->SetActorHiddenInGame(false);
+	spaceState_[spaceNum].second->SetActorEnableCollision(true);
 
 	UE_LOG(LogTemp, Display, TEXT("Put"));
 	return true;
