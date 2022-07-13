@@ -146,11 +146,11 @@ bool AStageMain::Put(const int32& spaceNum, AActor* Obj)
 	//MyComponent->GetDefaultSceneRootVariableName();
 	//MyComponent->SetHiddenInGame(false);
 
+	//Obj->SetHidden(false);
+	//Obj->SetActorHiddenInGame(false);
+	Obj->SetActorLocation(putPos);
+	//Obj->SetActorEnableCollision(true);
 	spaceState_[spaceNum].second = Obj;
-	spaceState_[spaceNum].second->SetActorLocation(putPos);
-	spaceState_[spaceNum].second->SetHidden(false);
-	spaceState_[spaceNum].second->SetActorHiddenInGame(false);
-	spaceState_[spaceNum].second->SetActorEnableCollision(true);
 
 	UE_LOG(LogTemp, Display, TEXT("Put"));
 	return true;
