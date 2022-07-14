@@ -5,12 +5,19 @@
 #include "../AWSTestCharacter.h"
 #include "GameLiftServerSDK.h"
 #include "UObject/ConstructorHelpers.h"
+#include "UnrealFpsGameHUD.h"
 
 AFpsGameMode::AFpsGameMode()
 {
 	// set default pawn class to our Blueprinted character
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Game/FirstPersonCPP/Blueprints/FirstPersonCharacter"));
+	if (PlayerPawnClassFinder.Class == nullptr)
+	{
+		check(!"PlayerPawnClassFinder.Class‚ªnullptr");
+		return;
+	}
 	DefaultPawnClass = PlayerPawnClassFinder.Class;
+	HUDClass = AUnrealFpsGameHUD::StaticClass();
 }
 
 void AFpsGameMode::BeginPlay()
