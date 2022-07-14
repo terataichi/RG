@@ -2,4 +2,28 @@
 
 
 #include "UnrealFpsGameGameState.h"
+#include "Net/UnrealNetwork.h"
 
+
+AUnrealFpsGameGameState::AUnrealFpsGameGameState()
+{
+
+}
+
+void AUnrealFpsGameGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AUnrealFpsGameGameState, latestEvent_);
+	DOREPLIFETIME(AUnrealFpsGameGameState, winningTeam_);
+}
+
+void AUnrealFpsGameGameState::SetLatestEvent(const FString& latestEvent)
+{
+	latestEvent_ = latestEvent;
+}
+
+void AUnrealFpsGameGameState::SetWinningTeam(const FString& winningTeam)
+{
+	winningTeam_ = winningTeam;
+}

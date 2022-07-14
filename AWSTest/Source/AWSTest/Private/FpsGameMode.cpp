@@ -6,6 +6,10 @@
 #include "GameLiftServerSDK.h"
 #include "UObject/ConstructorHelpers.h"
 #include "UnrealFpsGameHUD.h"
+#include "UnrealFpsGamePlayerState.h"
+#include "UnrealFpsGameGameState.h"
+#include "ETeamType.h"
+
 
 AFpsGameMode::AFpsGameMode()
 {
@@ -18,6 +22,8 @@ AFpsGameMode::AFpsGameMode()
 	}
 	DefaultPawnClass = PlayerPawnClassFinder.Class;
 	HUDClass = AUnrealFpsGameHUD::StaticClass();
+	PlayerStateClass = AUnrealFpsGamePlayerState::StaticClass();
+	GameStateClass = AUnrealFpsGameGameState::StaticClass();
 }
 
 void AFpsGameMode::BeginPlay()
@@ -25,6 +31,33 @@ void AFpsGameMode::BeginPlay()
 	Super::BeginPlay();
 	AWSGameInit();
 
+}
+
+FString AFpsGameMode::InitNewPlayer(APlayerController* newPlayerController, const FUniqueNetIdRepl& uniqueId, const FString& options, const FString& portal)
+{
+	FString initialiizedString = Super::InitNewPlayer(newPlayerController, uniqueId, options, portal);
+
+	if (newPlayerController == nullptr)
+	{
+		return initialiizedString;
+	}
+
+	APlayerState* playerState = newPlayerController->PlayerState;
+
+	if (playerState == nullptr)
+	{
+		return initialiizedString;
+	}
+
+	AUnrealFpsGamePlayerState* fpsPlayerState = Cast<AUnrealFpsGamePlayerState>(playerState);
+
+	if (fpsPlayerState == nullptr)
+	{
+		return initialiizedString;
+	}
+	fpsPlayerState->SetPlayerTeamType(ETeamType::GetRandomTeamType2String());
+
+	return initialiizedString;
 }
 
 void AFpsGameMode::AWSGameInit()
@@ -112,4 +145,18 @@ void AFpsGameMode::AWSGameInit()
 
 	auto ProcessReadeOutcome = Aws::GameLift::Server::ProcessReady(*params);
 #endif
+	if (GameState == nullptr)
+	{
+		check(!"GameState‚ªnullptr");
+		return;
+	}
+	
+	AUnrealFpsGameGameState* unrealFpsGameState = Cast<AUnrealFpsGameGameState>(GameState);
+	if (unrealFpsGameState == nullptr)
+	{
+		check(!"unrealFpsGameState‚ªnullptr");
+		return;
+	}
+	unrealFpsGameState->SetLatestEvent("GameEnded");
+	unrealFpsGameState->SetWinningTeam(ETeamType::TeamType2FString(TEAMTYPE::RED));
 }
