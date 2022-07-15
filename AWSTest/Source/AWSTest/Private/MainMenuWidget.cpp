@@ -17,6 +17,8 @@
 
 #include "Kismet/GameplayStatics.h"
 
+#include "LatencyRecorder.h"
+
 namespace
 {
 	constexpr float DEFAULT_PLAYERLATENCY = 60.0f;
@@ -180,25 +182,8 @@ void UMainMenuWidget::SetAveragePlayerLatency()
 		check(!"fpsGameInstance‚ªnullptr");
 		return;
 	}
-	float totalPlayerLatency = 0.0f;
-	const auto& playerLatencyList = fpsGameInstance->GetPlayerLatencies();
-	if (playerLatencyList.Num() <= 0)
-	{
-		// playerLatencyListSize‚ª0‚È‚çŒvŽZ‚à‰½‚à‚È‚¢‚Ì‚Åreturn
-		return;
-	}
-	for (float playerLatency : playerLatencyList)
-	{
-		totalPlayerLatency += playerLatency;
-	}
 
-	if (totalPlayerLatency < 0.0f)
-	{
-		check(!"totalPlayerLatency‚ª0");
-		return;
-	}
-
-	averagePlayerLatency_ = totalPlayerLatency / playerLatencyList.Num();
+	averagePlayerLatency_ = LatencyRecorder::GetAveragePlayerLatency(fpsGameInstance);
 
 	FString pingString = "Ping: " + FString::FromInt(FMath::RoundToInt(averagePlayerLatency_)) + "ms";
 	pingTextBlock_->SetText(FText::FromString(pingString));

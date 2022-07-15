@@ -49,6 +49,8 @@ private:
 
 	void ClearTimers();
 
+	FString GetOwingPlayerTeamName();
+
 	UPROPERTY()
 		FTimerHandle teammateCountHandle_;
 

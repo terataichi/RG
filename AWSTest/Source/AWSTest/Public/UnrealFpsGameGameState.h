@@ -21,6 +21,9 @@ public:
 	void SetLatestEvent(const FString& latestEvent);
 	void SetWinningTeam(const FString& winningTeam);
 
+	const FString& GetLatesEvent()const;
+	const FString& GetWinningTeam()const;
+
 private:
 	UPROPERTY(replicated)
 		FString latestEvent_;

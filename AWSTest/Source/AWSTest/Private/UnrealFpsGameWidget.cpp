@@ -9,6 +9,8 @@
 #include "UnrealFpsGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "LatencyRecorder.h"
+
 
 void UUnrealFpsGameWidget::NativeConstruct()
 {
@@ -25,27 +27,7 @@ void UUnrealFpsGameWidget::NativeDestruct()
 
 void UUnrealFpsGameWidget::SetTeammateCount()
 {
-	APlayerState* owningPlayerState = GetOwningPlayerState();
-
-	if (owningPlayerState == nullptr)
-	{
-		check(!"owningPlayerState‚ªnullptr");
-		return;
-	}
-
-	AUnrealFpsGamePlayerState* owningFpsGameState = Cast<AUnrealFpsGamePlayerState>(owningPlayerState);
-
-	if (owningFpsGameState == nullptr)
-	{
-		check(!"owningFpsGameState‚ªnullptr");
-		return;
-	}
-	FString owningPlayerTeam = owningFpsGameState->GetTeamString();
-	if (owningPlayerTeam.Len() <= 0)
-	{
-		check(!"owningPlayerTeam‚Ì’†g‚ª‚È‚¢");
-		return;
-	}
+	FString owningPlayerTeam = GetOwingPlayerTeamName();
 	teamNameTextBlock_->SetText(FText::FromString("Team Name: " + owningPlayerTeam));
 
 	TArray<APlayerState*> playerStates = GetWorld()->GetGameState()->PlayerArray;
@@ -71,14 +53,75 @@ void UUnrealFpsGameWidget::SetTeammateCount()
 
 	teammateCountTextBlock_->SetText(FText::FromString("Teammate Count: " + FString::FromInt(teammateCount)));
 
+
+
 }
 
 void UUnrealFpsGameWidget::SetLatesEvent()
 {
+	AGameStateBase* gameState = GetWorld()->GetGameState();
+
+	if (gameState == nullptr)
+	{
+		check(!"gameState‚ªnullptr");
+		return;
+	}
+
+	AUnrealFpsGameGameState* fpsGameState = Cast<AUnrealFpsGameGameState>(gameState);
+
+	if (fpsGameState == nullptr)
+	{
+		check(!"fpsGameState‚ªnullptr");
+		return;
+	}
+	const FString& latesEvent = fpsGameState->GetLatesEvent();
+	const FString& winningTeam = fpsGameState->GetWinningTeam();
+
+	if (latesEvent.Len() <= 0 || winningTeam.Len() <= 0)
+	{
+		return;
+	}
+
+	if (latesEvent.Equals("GameEnded"))
+	{
+		FString owningPlayerTeam = GetOwingPlayerTeamName();
+		FString gameOverMessage = "You and the " + owningPlayerTeam;
+		FString mes;
+		if (owningPlayerTeam.Equals(winningTeam))
+		{
+			mes = " won!";
+		}
+		else
+		{
+			mes = "lost (LEƒÖEM)";
+		}
+		eventTextBlock_->SetText(FText::FromString(gameOverMessage + mes));
+	}
+	else
+	{
+		eventTextBlock_->SetText(FText::FromString(latesEvent));
+	}
+	
+
 }
 
 void UUnrealFpsGameWidget::SetAveragePlayerLatency()
 {
+	UGameInstance* gameInstance = GetGameInstance();
+	if (gameInstance == nullptr)
+	{
+		check(!"gameInstance‚ªnullptr");
+		return;
+	}
+
+	UUnrealFpsGameInstance* fpsGameInstance = Cast<UUnrealFpsGameInstance>(gameInstance);
+
+	if (fpsGameInstance == nullptr)
+	{
+		check(!"fpsGameInstance‚ªnullptr");
+		return;
+	}
+	LatencyRecorder::GetAveragePlayerLatency(fpsGameInstance);
 }
 
 void UUnrealFpsGameWidget::InitTextBlocks()
@@ -105,4 +148,30 @@ void UUnrealFpsGameWidget::ClearTimers()
 	timerManager.ClearTimer(teammateCountHandle_);
 	timerManager.ClearTimer(latesEventHandle_);
 	timerManager.ClearTimer(averagePlayerLatencyHandle_);
+}
+
+FString UUnrealFpsGameWidget::GetOwingPlayerTeamName()
+{
+	APlayerState* owningPlayerState = GetOwningPlayerState();
+
+	if (owningPlayerState == nullptr)
+	{
+		check(!"owningPlayerState‚ªnullptr");
+		return FString();
+	}
+
+	AUnrealFpsGamePlayerState* owningFpsGameState = Cast<AUnrealFpsGamePlayerState>(owningPlayerState);
+
+	if (owningFpsGameState == nullptr)
+	{
+		check(!"owningFpsGameState‚ªnullptr");
+		return FString();
+	}
+	FString owningPlayerTeam = owningFpsGameState->GetTeamString();
+	if (owningPlayerTeam.Len() <= 0)
+	{
+		check(!"owningPlayerTeam‚Ì’†g‚ª‚È‚¢");
+		return FString();
+	}
+	return owningPlayerTeam;
 }

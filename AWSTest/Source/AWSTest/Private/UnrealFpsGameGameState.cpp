@@ -27,3 +27,13 @@ void AUnrealFpsGameGameState::SetWinningTeam(const FString& winningTeam)
 {
 	winningTeam_ = winningTeam;
 }
+
+const FString& AUnrealFpsGameGameState::GetLatesEvent() const
+{
+	return latestEvent_;
+}
+
+const FString& AUnrealFpsGameGameState::GetWinningTeam() const
+{
+	return winningTeam_;
+}
