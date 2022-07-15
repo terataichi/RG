@@ -69,6 +69,11 @@ public:
 protected:
 	virtual void BeginPlay()override;
 
+	virtual FString InitNewPlayer(
+		APlayerController* newPlayerController, const FUniqueNetIdRepl& uniqueId, const FString& options, const FString& portal
+	)override;
+
+
 private:
 	void AWSGameInit();
 
