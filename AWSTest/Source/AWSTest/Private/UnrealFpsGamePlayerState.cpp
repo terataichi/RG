@@ -32,3 +32,4 @@ bool AUnrealFpsGamePlayerState::CheckTeamName(const FString& teamName)
 	return team_.Equals(teamName);
 }
 
+

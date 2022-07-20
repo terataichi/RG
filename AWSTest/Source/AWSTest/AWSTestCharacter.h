@@ -149,7 +149,10 @@ private:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerOnFire();
 
+	virtual void OnRep_PlayerState()override;
+
 public:
 
+	void ReturnToMainMenu();
 };
 

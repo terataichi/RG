@@ -4,8 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Interfaces/IHttpRequest.h"
+#include "GameLiftServerSDK.h"
 #include "FpsGameMode.generated.h"
 
+class FHttpModule;
 
 USTRUCT()
 struct FStartGameSessionState
@@ -14,6 +17,11 @@ struct FStartGameSessionState
 
 	UPROPERTY()
 		bool status_;
+
+	UPROPERTY()
+		FString matchmakingConfigurationArn_;
+
+	TMap<FString, Aws::GameLift::Server::Model::Player> playerIdToPlayer_;
 
 	FStartGameSessionState() {
 		status_ = false;
@@ -42,7 +50,7 @@ struct FProcessTerminateState
 
 	FProcessTerminateState() {
 		status_ = false;
-		terminationTime_ = 0;
+		terminationTime_ = 0.0L;
 	}
 };
 
@@ -66,6 +74,25 @@ class AWSTEST_API AFpsGameMode : public AGameModeBase
 public:
 	AFpsGameMode();
 
+	virtual void PreLogin(const FString& option, const FString& address, const FUniqueNetIdRepl& uniqueId, FString& errorMessage)override;
+
+	virtual void Logout(AController* exiting) override;
+
+	UPROPERTY()
+		FTimerHandle countDownUntilGameOverHandle_;
+
+	UPROPERTY()
+		FTimerHandle endGameHandle_;
+
+	UPROPERTY()
+		FTimerHandle pickAWinningHandle_;
+
+	UPROPERTY()
+		FTimerHandle handleProcessTerminationHandle_;
+
+	UPROPERTY()
+		FTimerHandle handleGameSessionUpdateHandle_;
+
 protected:
 	virtual void BeginPlay()override;
 
@@ -75,6 +102,8 @@ protected:
 
 
 private:
+	FHttpModule* httpModule_;
+
 	void AWSGameInit();
 
 	UPROPERTY()
@@ -88,4 +117,33 @@ private:
 
 	UPROPERTY()
 		FHealthCheckState healthCheckState_;
+
+	UPROPERTY()
+		FString apiUrl_;
+
+	UPROPERTY()
+		FString serverPassword_;
+
+	UPROPERTY()
+		int remainingGameTime_;
+
+	UPROPERTY()
+		bool gameSessionActivated_;
+
+	UFUNCTION()
+		void CountDownUntilGameOver();
+
+	UFUNCTION()
+		void EndGame();
+
+	UFUNCTION()
+		void PickAWinningTeam();
+
+	UFUNCTION()
+		void HandleProcessTermination();
+
+	UFUNCTION()
+		void HandleGameSessionUpdate();
+
+	void OnRecordMatchResultResponseReceived(FHttpRequestPtr Request, FHttpREsponsePtr response, bool bWasSuccessful);
 };

@@ -5,7 +5,7 @@
 #include "utility"
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Runtime/Online/HTTP/Public/Http.h"
+#include "Interfaces/IHttpRequest.h"
 #include "MainMenuWidget.generated.h"
 
 class UWebBrowser;
@@ -13,6 +13,7 @@ class UButton;
 class UTextBlock;
 class FJsonObject;
 class UUnrealFpsGameInstance;
+class FHttpModule;
 
 /**
  * 

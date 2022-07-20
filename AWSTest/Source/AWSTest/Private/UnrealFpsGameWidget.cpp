@@ -93,7 +93,7 @@ void UUnrealFpsGameWidget::SetLatesEvent()
 		}
 		else
 		{
-			mes = "lost (LEƒÖEM)";
+			mes = " lost";
 		}
 		eventTextBlock_->SetText(FText::FromString(gameOverMessage + mes));
 	}
@@ -121,7 +121,10 @@ void UUnrealFpsGameWidget::SetAveragePlayerLatency()
 		check(!"fpsGameInstance‚ªnullptr");
 		return;
 	}
-	LatencyRecorder::GetAveragePlayerLatency(fpsGameInstance);
+
+	float playerLatency = LatencyRecorder::GetAveragePlayerLatency(fpsGameInstance);
+	FString pingString = "Ping: " + FString::FromInt(FMath::RoundToInt(playerLatency)) + "ms";
+	pingTextBlock_->SetText(FText::FromString(pingString));
 }
 
 void UUnrealFpsGameWidget::InitTextBlocks()

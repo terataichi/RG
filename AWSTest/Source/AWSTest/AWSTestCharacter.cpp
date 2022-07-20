@@ -12,7 +12,19 @@
 #include "MotionControllerComponent.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 
+#include "UnrealFpsGamePlayerState.h"
+#include "Net/UnrealNetWork.h"
+#include "Kismet/GameplayStatics.h"
+#include "ETeamType.h"
+
+
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
+
+namespace
+{
+	const FString MAINMENU_LEVELNAME = "MainMenuMap";
+	const FString BODY_MATERIAL_INFO = "BodyColor";
+}
 
 //////////////////////////////////////////////////////////////////////////
 // AAWSTestCharacter
@@ -142,6 +154,10 @@ void AAWSTestCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	PlayerInputComponent->BindAxis("TurnRate", this, &AAWSTestCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AAWSTestCharacter::LookUpAtRate);
+
+
+
+	PlayerInputComponent->BindAction("ReturnToMainMenu", IE_Pressed, this, &AAWSTestCharacter::ReturnToMainMenu);
 }
 
 void AAWSTestCharacter::OnFire()
@@ -303,6 +319,56 @@ bool AAWSTestCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerI
 	}
 	
 	return false;
+}
+
+void AAWSTestCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	APlayerState* owningPlayerState = GetPlayerState();
+
+	if (owningPlayerState == nullptr)
+	{
+		check(!"playerState‚ªnullpt");
+		return;
+	}
+
+	AUnrealFpsGamePlayerState* owningFpsPlayerState = Cast<AUnrealFpsGamePlayerState>(owningPlayerState);
+
+	if (owningFpsPlayerState == nullptr)
+	{
+		check(!"owningFpsPlayerState‚ªnullptr");
+		return;
+	}
+
+	FString teamName = owningFpsPlayerState->GetTeamString();
+
+	if (teamName.Len() <= 0)
+	{
+		check(!"teamName‚ª‘¶Ý‚µ‚È‚¢");
+		return;
+	}
+
+	if (ETeamType::FString2TeamType(teamName) == TEAMTYPE::RED)
+	{
+		UE_LOG(LogTemp, Log, TEXT("RedTeam"));
+		return;
+	}
+	else if (ETeamType::FString2TeamType(teamName) == TEAMTYPE::BLUE)
+	{
+		UE_LOG(LogTemp, Log, TEXT("BlueTeam"));
+		return;
+	}
+	else
+	{
+		check(!"•s³‚ÈteamName");
+		return;
+	}
+}
+
+void AAWSTestCharacter::ReturnToMainMenu()
+{
+	UGameplayStatics::OpenLevel(GetWorld(), FName(*MAINMENU_LEVELNAME), false, "");
 }
 
 void AAWSTestCharacter::ServerOnFire_Implementation(void)

@@ -9,6 +9,11 @@
 #include "UnrealFpsGamePlayerState.h"
 #include "UnrealFpsGameGameState.h"
 #include "ETeamType.h"
+#include "Runtime/Online/HTTP/Public/Http.h"
+#include "TextReaderComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Json.h"
+#include "JsonUtilitys.h"
 
 
 AFpsGameMode::AFpsGameMode()
@@ -26,6 +31,14 @@ AFpsGameMode::AFpsGameMode()
 	GameStateClass = AUnrealFpsGameGameState::StaticClass();
 }
 
+void AFpsGameMode::PreLogin(const FString& option, const FString& address, const FUniqueNetIdRepl& uniqueId, FString& errorMessage)
+{
+}
+
+void AFpsGameMode::Logout(AController* exiting)
+{
+}
+
 void AFpsGameMode::BeginPlay()
 {
 	Super::BeginPlay();
@@ -37,7 +50,7 @@ FString AFpsGameMode::InitNewPlayer(APlayerController* newPlayerController, cons
 {
 	FString initialiizedString = Super::InitNewPlayer(newPlayerController, uniqueId, options, portal);
 
-	if (newPlayerController == nullptr)
+	/*if (newPlayerController == nullptr)
 	{
 		return initialiizedString;
 	}
@@ -55,7 +68,7 @@ FString AFpsGameMode::InitNewPlayer(APlayerController* newPlayerController, cons
 	{
 		return initialiizedString;
 	}
-	fpsPlayerState->SetPlayerTeamType(ETeamType::GetRandomTeamType2String());
+	fpsPlayerState->SetPlayerTeamType(ETeamType::GetRandomTeamType2String());*/
 
 	return initialiizedString;
 }
@@ -145,7 +158,7 @@ void AFpsGameMode::AWSGameInit()
 
 	auto ProcessReadeOutcome = Aws::GameLift::Server::ProcessReady(*params);
 #endif
-	if (GameState == nullptr)
+	/*if (GameState == nullptr)
 	{
 		check(!"GameState‚ªnullptr");
 		return;
@@ -158,5 +171,29 @@ void AFpsGameMode::AWSGameInit()
 		return;
 	}
 	unrealFpsGameState->SetLatestEvent("GameEnded");
-	unrealFpsGameState->SetWinningTeam(ETeamType::TeamType2FString(TEAMTYPE::RED));
+	unrealFpsGameState->SetWinningTeam(ETeamType::TeamType2FString(TEAMTYPE::RED));*/
+}
+
+void AFpsGameMode::CountDownUntilGameOver()
+{
+}
+
+void AFpsGameMode::EndGame()
+{
+}
+
+void AFpsGameMode::PickAWinningTeam()
+{
+}
+
+void AFpsGameMode::HandleProcessTermination()
+{
+}
+
+void AFpsGameMode::HandleGameSessionUpdate()
+{
+}
+
+void AFpsGameMode::OnRecordMatchResultResponseReceived(FHttpRequestPtr Request, FHttpREsponsePtr response, bool bWasSuccessful)
+{
 }

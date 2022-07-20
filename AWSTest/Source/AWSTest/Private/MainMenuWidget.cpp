@@ -19,6 +19,8 @@
 
 #include "LatencyRecorder.h"
 
+#include "Runtime/Online/HTTP/Public/Http.h"
+
 namespace
 {
 	constexpr float DEFAULT_PLAYERLATENCY = 60.0f;
