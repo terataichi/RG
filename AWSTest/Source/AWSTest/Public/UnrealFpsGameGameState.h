@@ -13,5 +13,21 @@ UCLASS()
 class AWSTEST_API AUnrealFpsGameGameState : public AGameStateBase
 {
 	GENERATED_BODY()
-	
+public:
+	AUnrealFpsGameGameState();
+
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	void SetLatestEvent(const FString& latestEvent);
+	void SetWinningTeam(const FString& winningTeam);
+
+	const FString& GetLatesEvent()const;
+	const FString& GetWinningTeam()const;
+
+private:
+	UPROPERTY(replicated)
+		FString latestEvent_;
+
+	UPROPERTY(replicated)
+		FString winningTeam_;
 };

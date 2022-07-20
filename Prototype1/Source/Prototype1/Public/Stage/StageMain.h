@@ -27,6 +27,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable, Category = "StageF")
+	void Init(FVector spaceSize);
+
 	/// <summary>
 	/// マスを特定する
 	/// </summary>
@@ -73,8 +76,4 @@ private:
 	//std::vector<std::pair<int32, FVector>> playersNum_;								// プレイヤーごとにほしい情報{マスの番号、設置する場合の座標}
 
 	std::vector<std::pair<StageSpaceState, AActor*>> spaceState_;						// マスのステータスと配置オブジェクト
-
-	// 仮
-	FString path_;
-	TSubclassOf<AActor> subClass_;
 };

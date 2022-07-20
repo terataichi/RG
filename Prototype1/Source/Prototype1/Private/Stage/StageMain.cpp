@@ -21,6 +21,26 @@ void AStageMain::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Init({ 100.0f,100.0f,1.0f });
+}
+
+// Called every frame
+void AStageMain::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
+void AStageMain::Init(FVector spaceSize)
+{
+	SpaceSize_ = spaceSize;
+
+	if ((SpaceSize_.X == 0.0f) || 
+		(SpaceSize_.Y == 0.0f) ||
+		(SpaceSize_.Z == 0.0f))
+	{
+		return;
+	}
+
 	// 中心座標と大きさの取得
 	this->GetActorBounds(true, centerPos_, size_);
 
@@ -38,16 +58,7 @@ void AStageMain::BeginPlay()
 		state.first = StageSpaceState::NotPut;
 	}
 
-	path_ = "/Game/Stage/BP/StageObj/MyTestObj.MyTestObj_C";							// /Content 以下のパスが /Game 以下のパスに置き換わり、コンテントブラウザーで名前が test なら test.test_C を指定する。
-	subClass_ = TSoftClassPtr<AActor>(FSoftObjectPath(*path_)).LoadSynchronous();		// 上記で設定したパスに該当するクラスを取得
-
 	GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Red, TEXT("Stage Init"));
-}
-
-// Called every frame
-void AStageMain::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 void AStageMain::DrawSpace(const int32& spaceNum)
@@ -159,13 +170,18 @@ bool AStageMain::Put(const int32& spaceNum, AActor* Obj)
 AActor* AStageMain::Take(const int32& spaceNum)
 {
 	// ガード処理
-	if (spaceNum != -1 && spaceState_[spaceNum].first != StageSpaceState::Put)
+	if (spaceNum != -1 && (spaceState_[spaceNum].first == StageSpaceState::Put))
 	{
 		// 何か設置されていたら削除する
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, TEXT("take"));
 		spaceState_[spaceNum].first = StageSpaceState::NotPut;
-		return spaceState_[spaceNum].second;
+
+		auto obj = spaceState_[spaceNum].second;
+		spaceState_[spaceNum].second = nullptr;
+		return obj;
 	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, TEXT("nottake"));
 	return nullptr;
 }
 
