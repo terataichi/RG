@@ -77,7 +77,7 @@ void AStageMain::MapInit()
 	previewMap_.Add("WallBP_C", str + "WallBPP.WallBPP_C");
 }
 
-void AStageMain::DrawSpace(const int32& spaceNum, AActor* Obj)
+void AStageMain::DrawSpace(const int32& spaceNum, AActor* Obj, const float& z)
 {
 	if (spaceState_[spaceNum].first == StageSpaceState::Put)
 	{
@@ -122,7 +122,7 @@ void AStageMain::DrawSpace(const int32& spaceNum, AActor* Obj)
 	{
 		num.X * divSize_.X + divSize_.X / 2.0f - size_.X / 2.0f,
 		num.Y * divSize_.Y + divSize_.Y / 2.0f - size_.Y / 2.0f,
-		centerPos_.Z + size_.Z
+		z
 	};
 
 	// デバッグ用ガイド表示
@@ -163,7 +163,6 @@ int32 AStageMain::GetSpaceNum(const FVector& impactPoint)
 }
 
 
-
 FVector2D AStageMain::SpaceToXY(const int32& spaceNum)
 {
 	// 番号をマス目に変換
@@ -177,7 +176,7 @@ FVector2D AStageMain::SpaceToXY(const int32& spaceNum)
 	return FVector2D(X,Y);
 }
 
-bool AStageMain::Put(const int32& spaceNum, AActor* Obj)
+bool AStageMain::Put(const int32& spaceNum, AActor* Obj,const float& z)
 {
 	// ガード処理
 	if (spaceNum == -1)
@@ -205,7 +204,7 @@ bool AStageMain::Put(const int32& spaceNum, AActor* Obj)
 	{
 		location.X + (num.X * divSize_.X + divSize_.X / 2.0f - size_.X / 2.0f),
 		location.Y + (num.Y * divSize_.Y + divSize_.Y / 2.0f - size_.Y / 2.0f),
-		centerPos_.Z + size_.Z
+		z
 	};
 	spaceState_[spaceNum].first = StageSpaceState::Put;
 

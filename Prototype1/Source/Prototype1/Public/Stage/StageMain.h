@@ -37,12 +37,12 @@ public:
 	/// </summary>
 	/// <param name="impactPoint">置きたいマス</param>
 	UFUNCTION(BlueprintCallable, Category = "StageF")
-	void DrawSpace(const int32& spaceNum,AActor* Obj);
+	void DrawSpace(const int32& spaceNum,AActor* Obj, const float& z);
 
 	// 設置命令
 	// あとでアイテムリストももらうようにする
 	UFUNCTION(BlueprintCallable, Category = "StageF")
-	bool Put(const int32& spaceNum,AActor* Obj);
+	bool Put(const int32& spaceNum,AActor* Obj,const float& z);
 	// 撤去命令
 	UFUNCTION(BlueprintCallable, Category = "StageF")
 	AActor* Take(const int32& spaceNum);
