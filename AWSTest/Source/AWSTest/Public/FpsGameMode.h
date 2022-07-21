@@ -6,9 +6,12 @@
 #include "GameFramework/GameModeBase.h"
 #include "Interfaces/IHttpRequest.h"
 #include "GameLiftServerSDK.h"
+#include "Interfaces/IHttpRequest.h"
 #include "FpsGameMode.generated.h"
 
+
 class FHttpModule;
+class AUnrealFpsGameGameState;
 
 USTRUCT()
 struct FStartGameSessionState
@@ -50,7 +53,7 @@ struct FProcessTerminateState
 
 	FProcessTerminateState() {
 		status_ = false;
-		terminationTime_ = 0.0L;
+		terminationTime_ = 0L;
 	}
 };
 
@@ -92,6 +95,8 @@ public:
 
 	UPROPERTY()
 		FTimerHandle handleGameSessionUpdateHandle_;
+
+	AUnrealFpsGameGameState* GetGameState();
 
 protected:
 	virtual void BeginPlay()override;
@@ -145,5 +150,5 @@ private:
 	UFUNCTION()
 		void HandleGameSessionUpdate();
 
-	void OnRecordMatchResultResponseReceived(FHttpRequestPtr Request, FHttpREsponsePtr response, bool bWasSuccessful);
+	void OnRecordMatchResultResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr response, bool bWasSuccessful);
 };

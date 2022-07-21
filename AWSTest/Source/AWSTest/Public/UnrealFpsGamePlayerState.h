@@ -20,9 +20,15 @@ public:
 
 	void SetPlayerTeamType(const FString& teamName);
 
+	void SetPlayerSessionId(const FString& playerSessionId);
+
+	void SetMatchmakingPlayerId(const FString& matchmakingPlayerId);
+
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	const FString& GetTeamString()const;
+
+	const FString& GetPlayerSessionId()const;
 
 	bool CheckTeamName(const FString& teamName);
 
@@ -31,7 +37,7 @@ private:
 		FString playerSessionId_;
 
 	UPROPERTY()
-		FString matchMakingPlayerId_;
+		FString matchmakingPlayerId_;
 
 	UPROPERTY(replicated)
 		FString team_;

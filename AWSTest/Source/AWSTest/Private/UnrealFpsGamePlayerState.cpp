@@ -15,6 +15,16 @@ void AUnrealFpsGamePlayerState::SetPlayerTeamType(const FString& teamName)
 	team_ = teamName;
 }
 
+void AUnrealFpsGamePlayerState::SetPlayerSessionId(const FString& playerSessionId)
+{
+	playerSessionId_ = playerSessionId;
+}
+
+void AUnrealFpsGamePlayerState::SetMatchmakingPlayerId(const FString& matchmakingPlayerId)
+{
+	matchmakingPlayerId_ = matchmakingPlayerId;
+}
+
 void AUnrealFpsGamePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -25,6 +35,11 @@ void AUnrealFpsGamePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 const FString& AUnrealFpsGamePlayerState::GetTeamString() const
 {
 	return team_;
+}
+
+const FString& AUnrealFpsGamePlayerState::GetPlayerSessionId() const
+{
+	return playerSessionId_;
 }
 
 bool AUnrealFpsGamePlayerState::CheckTeamName(const FString& teamName)
