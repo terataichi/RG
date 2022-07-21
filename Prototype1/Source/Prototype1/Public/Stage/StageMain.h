@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <memory>
+#include <map>
 #include <utility>
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -27,6 +28,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// 自分で呼んで
 	UFUNCTION(BlueprintCallable, Category = "StageF")
 	void Init(FVector spaceSize);
 
@@ -35,7 +37,7 @@ public:
 	/// </summary>
 	/// <param name="impactPoint">置きたいマス</param>
 	UFUNCTION(BlueprintCallable, Category = "StageF")
-	void DrawSpace(const int32& spaceNum);
+	void DrawSpace(const int32& spaceNum,AActor* Obj);
 
 	// 設置命令
 	// あとでアイテムリストももらうようにする
@@ -49,12 +51,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "StageF")
 	int32 GetSpaceNum(const FVector& impactPoint);
 
-	//// プレイヤーの追加
-	//// 引数に保存したい変数を渡す
-	//UFUNCTION(BlueprintCallable, Category = "StageF")
-	//int32 AddPlayer(UPARAM(ref) int32& myID);
-
 private:
+	void MapInit();
+
 	// マス目を縦と横何マスか調べる
 	FVector2D SpaceToXY(const int32& spaceNum);
 
@@ -75,5 +74,8 @@ private:
 
 	//std::vector<std::pair<int32, FVector>> playersNum_;								// プレイヤーごとにほしい情報{マスの番号、設置する場合の座標}
 
+	AActor* previewObj_;
 	std::vector<std::pair<StageSpaceState, AActor*>> spaceState_;						// マスのステータスと配置オブジェクト
+
+	TMap<FString, FString> previewMap_;
 };

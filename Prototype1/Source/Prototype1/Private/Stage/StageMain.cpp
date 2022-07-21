@@ -21,7 +21,7 @@ void AStageMain::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Init({ 100.0f,100.0f,1.0f });
+	//Init({ 100.0f,100.0f,1.0f });
 }
 
 // Called every frame
@@ -59,10 +59,63 @@ void AStageMain::Init(FVector spaceSize)
 	}
 
 	GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Red, TEXT("Stage Init"));
+
+	MapInit();
 }
 
-void AStageMain::DrawSpace(const int32& spaceNum)
+void AStageMain::MapInit()
 {
+	//"/Game/Stage/BP/StageObj/MyTestObj.MyTestObj_C"
+	previewMap_.Reset();
+	FString str = "/Game/Stage/BP/StageObj/StageObjCopy/";
+	previewMap_.Add("RockBP_C", str + "RockBPP.RockBPP_C");
+	previewMap_.Add("NewPortalBP_C", str + "NewPortalBPP.NewPortalBPP_C");
+	previewMap_.Add("accelerationBP_C", str + "accelerationBPP.accelerationBPP_C");
+	previewMap_.Add("JumpPadBP_C", str + "JumpPadBPP.JumpPadBPP_C");
+	previewMap_.Add("StairBP_C", str + "StairBPP.StairBPP_C");
+	previewMap_.Add("StepBP_C", str + "StepBPP.StepBPP_C");
+	previewMap_.Add("WallBP_C", str + "WallBPP.WallBPP_C");
+}
+
+void AStageMain::DrawSpace(const int32& spaceNum, AActor* Obj)
+{
+	if (spaceState_[spaceNum].first == StageSpaceState::Put)
+	{
+		return;
+	}
+	if (Obj == nullptr)
+	{
+		return;
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, Obj->GetClass()->GetName());
+
+	// 違うアクターを表示する時に切り替える
+	if ((previewObj_ == nullptr) || (previewObj_->GetClass()->GetName() != Obj->GetClass()->GetName()))
+	{
+		if (previewObj_ != nullptr)
+		{
+			GetWorld()->DestroyActor(previewObj_);
+		} 
+		
+		if (!previewMap_.Find(Obj->GetClass()->GetName()))
+		{
+			return;
+		}
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, TEXT("findclear"));
+
+		// アクターの生成
+		TSubclassOf<class AActor> sc = TSoftClassPtr<AActor>(FSoftObjectPath(*previewMap_[Obj->GetClass()->GetName()])).LoadSynchronous();
+		if (sc == nullptr)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, TEXT("nullptr"));
+			return;
+		}
+		previewObj_ = GetWorld()->SpawnActor(sc);
+		previewObj_->SetActorLocation(Obj->GetActorLocation());
+		previewObj_->SetActorRotation(Obj->GetActorRotation());
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, TEXT("CreatePreview"));
+	}
+	
 	auto num = SpaceToXY(spaceNum);
 
 	FVector drawPos =
@@ -73,19 +126,21 @@ void AStageMain::DrawSpace(const int32& spaceNum)
 	};
 
 	// デバッグ用ガイド表示
-	FLinearColor col = FLinearColor::Red;
-	if (spaceState_[spaceNum].first == StageSpaceState::NotPut)
-	{
-		col = FLinearColor::Blue;
-	}
-	if (spaceState_[spaceNum].first == StageSpaceState::Put)
-	{
-		col = FLinearColor::Green;
-	}
+	//FLinearColor col = FLinearColor::Red;
+	//if (spaceState_[spaceNum].first == StageSpaceState::NotPut)
+	//{
+	//	col = FLinearColor::Blue;
+	//}
+	//if (spaceState_[spaceNum].first == StageSpaceState::Put)
+	//{
+	//	col = FLinearColor::Green;
+	//}
 
 	// デバッグ描画
 	//UKismetSystemLibrary::DrawDebugSphere(GetWorld(), impactPoint, 30.0f, 12, col);
-	UKismetSystemLibrary::DrawDebugBox(GetWorld(), drawPos + this->GetActorLocation(), divSize_ / 2.0f, col);
+	previewObj_->SetActorLocation(drawPos + this->GetActorLocation());
+
+	//UKismetSystemLibrary::DrawDebugBox(GetWorld(), drawPos + this->GetActorLocation(), divSize_ / 2.0f, col);
 }
 
 int32 AStageMain::GetSpaceNum(const FVector& impactPoint)
@@ -106,6 +161,8 @@ int32 AStageMain::GetSpaceNum(const FVector& impactPoint)
 
 	return  num;
 }
+
+
 
 FVector2D AStageMain::SpaceToXY(const int32& spaceNum)
 {
