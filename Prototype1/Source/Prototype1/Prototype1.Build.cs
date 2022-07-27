@@ -15,7 +15,13 @@ public class Prototype1 : ModuleRules
 			"InputCore" , 
 			"GameLiftServerSDK", 
 			"MoveIt",
-			"LPSPSample"
+			"LPSPSample",
+			"UMG",
+			"SlateCore",
+			"Http",
+			"Json",
+			"JsonUtilities",
+			"WebBrowserWidget"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

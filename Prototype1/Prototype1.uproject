@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{769F39F7-4160-B247-2C7A-91AC87F5BD76}",
+	"EngineAssociation": "{94E7F1D0-4D9F-CD5F-CF83-D4938ECF54EF}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -27,6 +27,10 @@
 			"Name": "MoveIt",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/1b8d6e55c50b4b189f283cbbe3d266d9"
+		},
+		{
+			"Name": "WebBrowserWidget",
+			"Enabled": true
 		}
 	]
 }
