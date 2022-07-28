@@ -19,7 +19,7 @@ FString UTextReaderComponent::ReadFile(const FString& filePath)
 	//FString directoryPath = FPaths::ProjectContentDir();
 	//FString fullPath = directoryPath + filePath;
 
-	//FString result = {};
+	FString result = {};
 	//IPlatformFile& file = FPlatformFileManager::Get().GetPlatformFile();
 
 	//if (!file.FileExists(*fullPath))

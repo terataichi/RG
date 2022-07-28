@@ -16,14 +16,15 @@ UTextReaderComponent::UTextReaderComponent()
 FString UTextReaderComponent::ReadFile(const FString& filePath)
 {
 	FString directoryPath = FPaths::ProjectContentDir();
-	FString fullPath = directoryPath + "/" + filePath;
+	FString fullPath = directoryPath + filePath;
 
 	FString result = {};
 	IPlatformFile& file = FPlatformFileManager::Get().GetPlatformFile();
 
 	if (!file.FileExists(*fullPath))
 	{
-		check(!"ì«Ç›çûÇﬁFileÇ™ë∂ç›ÇµÇ»Ç¢");
+		UE_LOG(LogTemp, Error, TEXT("%s"), *FString(fullPath));
+		//check(!"ì«Ç›çûÇﬁFileÇ™ë∂ç›ÇµÇ»Ç¢");
 	}
 	FFileHelper::LoadFileToString(result, *fullPath);
 	return result;

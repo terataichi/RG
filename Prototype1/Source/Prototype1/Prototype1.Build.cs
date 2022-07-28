@@ -21,6 +21,7 @@ public class Prototype1 : ModuleRules
 			"Http",
 			"Json",
 			"JsonUtilities",
+			"WebBrowserWidget"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
