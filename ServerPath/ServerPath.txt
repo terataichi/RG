@@ -1,1 +1,1 @@
-AWSTest\Binaries\Win64\AWSTestServer.exe
+Prototype1\Binaries\Win64\Prototype1Server.exe

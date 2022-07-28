@@ -40,7 +40,7 @@ AFpsGameMode::AFpsGameMode()
 
 	UTextReaderComponent* textReader = CreateDefaultSubobject<UTextReaderComponent>(TEXT("TextReaderComp"));
 
-	apiUrl_ = textReader->ReadFile("Url/ApiUrl.txt");
+	apiUrl_ = textReader->ReadFile("Urls/ApiUrl.txt");
 
 	httpModule_ = &FHttpModule::Get();
 
