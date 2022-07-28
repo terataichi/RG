@@ -39,6 +39,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "StageF")
 	void DrawSpace(const int32& spaceNum,AActor* Obj, const float& z);
 
+	UFUNCTION(BlueprintCallable, Category = "StageF")
+	void ResetPreview();
+
 	// 設置命令
 	// あとでアイテムリストももらうようにする
 	UFUNCTION(BlueprintCallable, Category = "StageF")
@@ -74,6 +77,7 @@ private:
 
 	//std::vector<std::pair<int32, FVector>> playersNum_;								// プレイヤーごとにほしい情報{マスの番号、設置する場合の座標}
 
+	FString nowPreview_;
 	AActor* previewObj_;
 	std::vector<std::pair<StageSpaceState, AActor*>> spaceState_;						// マスのステータスと配置オブジェクト
 
