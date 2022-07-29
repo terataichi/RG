@@ -8,7 +8,7 @@
 
 // Sets default values
 AStageMain::AStageMain() :
-	rayLength_(10000.0f), dbgTime_(0.01f), SpaceSize_(100.0f)
+	rayLength_(10000.0f), SpaceSize_(100.0f), dbgTime_(0.01f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -87,10 +87,10 @@ void AStageMain::DrawSpace(const int32& spaceNum, AActor* Obj, const float& z)
 	{
 		return;
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, Obj->GetClass()->GetName());
+	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, Obj->GetClass()->GetName());
 
 	// 違うアクターを表示する時に切り替える
-	if ((previewObj_ == nullptr) || (previewObj_->GetClass()->GetName() != Obj->GetClass()->GetName()))
+	if ((previewObj_ == nullptr) || (previewMap_[Obj->GetClass()->GetName()] != nowPreview_))
 	{
 		if (previewObj_ != nullptr)
 		{
@@ -101,7 +101,7 @@ void AStageMain::DrawSpace(const int32& spaceNum, AActor* Obj, const float& z)
 		{
 			return;
 		}
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, TEXT("findclear"));
+		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, TEXT("findclear"));
 
 		// アクターの生成
 		TSubclassOf<class AActor> sc = TSoftClassPtr<AActor>(FSoftObjectPath(*previewMap_[Obj->GetClass()->GetName()])).LoadSynchronous();
@@ -110,6 +110,8 @@ void AStageMain::DrawSpace(const int32& spaceNum, AActor* Obj, const float& z)
 			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, TEXT("nullptr"));
 			return;
 		}
+
+		nowPreview_ = previewMap_[Obj->GetClass()->GetName()];
 		previewObj_ = GetWorld()->SpawnActor(sc);
 		previewObj_->SetActorLocation(Obj->GetActorLocation());
 		previewObj_->SetActorRotation(Obj->GetActorRotation());
@@ -141,6 +143,14 @@ void AStageMain::DrawSpace(const int32& spaceNum, AActor* Obj, const float& z)
 	previewObj_->SetActorLocation(drawPos + this->GetActorLocation());
 
 	//UKismetSystemLibrary::DrawDebugBox(GetWorld(), drawPos + this->GetActorLocation(), divSize_ / 2.0f, col);
+}
+
+void AStageMain::ResetPreview()
+{
+	if (previewObj_)
+	{
+		previewObj_->SetActorLocation({ 50000,50000,50000 });
+	}
 }
 
 int32 AStageMain::GetSpaceNum(const FVector& impactPoint)

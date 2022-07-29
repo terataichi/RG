@@ -12,6 +12,8 @@
 #include "AwsGameLift/ETeamType.h"
 #include "AwsGameLift/TextReaderComponent.h"
 
+#include "MyFps/MyFPSHUD.h"
+
 #include "Runtime/Online/HTTP/Public/Http.h"
 #include "Kismet/GameplayStatics.h"
 #include "Json.h"
@@ -27,20 +29,20 @@ namespace
 AFpsGameMode::AFpsGameMode()
 {
 	// set default pawn class to our Blueprinted character
-	/*static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Game/FirstPersonCPP/Blueprints/FirstPersonCharacter"));
+	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Game/Blueprints/BP_MyFPSMoveItCharacter"));
 	if (PlayerPawnClassFinder.Class == nullptr)
 	{
 		check(!"PlayerPawnClassFinder.Class‚ªnullptr");
 		return;
 	}
-	DefaultPawnClass = PlayerPawnClassFinder.Class;*/
-	HUDClass = AUnrealFpsGameHUD::StaticClass();
+	DefaultPawnClass = PlayerPawnClassFinder.Class;
+	HUDClass = AMyFPSHUD::StaticClass();
 	PlayerStateClass = AUnrealFpsGamePlayerState::StaticClass();
 	GameStateClass = AUnrealFpsGameGameState::StaticClass();
 
 	UTextReaderComponent* textReader = CreateDefaultSubobject<UTextReaderComponent>(TEXT("TextReaderComp"));
 
-	apiUrl_ = textReader->ReadFile("Url/ApiUrl.txt");
+	apiUrl_ = textReader->ReadFile("Urls/ApiUrl.txt");
 
 	httpModule_ = &FHttpModule::Get();
 
