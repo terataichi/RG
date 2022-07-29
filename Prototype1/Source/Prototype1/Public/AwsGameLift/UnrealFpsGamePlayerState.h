@@ -8,12 +8,12 @@
 
 
 UENUM(BlueprintType)
-enum class PLAYER_STATE: uint8
+enum class PLAYER_STATE : uint8
 {
 	NON,
 	PREPARATION,
 	BATTLE
-}
+};
 
 /**
  * 
