@@ -75,6 +75,7 @@ void AStageMain::MapInit()
 	previewMap_.Add("StairBP_C", str + "StairBPP.StairBPP_C");
 	previewMap_.Add("StepBP_C", str + "StepBPP.StepBPP_C");
 	previewMap_.Add("WallBP_C", str + "WallBPP.WallBPP_C");
+	previewMap_.Add("HealSpotBP_C", str + "HealSpotBPP.HealSpotBPP_C");
 }
 
 void AStageMain::DrawSpace(const int32& spaceNum, AActor* Obj, const float& z)
