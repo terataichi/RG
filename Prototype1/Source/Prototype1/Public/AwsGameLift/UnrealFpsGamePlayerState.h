@@ -7,6 +7,14 @@
 #include "UnrealFpsGamePlayerState.generated.h"
 
 
+UENUM(BlueprintType)
+enum class PLAYER_STATE: uint8
+{
+	NON,
+	PREPARATION,
+	BATTLE
+}
+
 /**
  * 
  */
@@ -26,9 +34,16 @@ public:
 
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	const FString& GetPlayerSessionId()const;
+
+	UFUNCTION(BlueprintCallable)
 	const FString& GetTeamString()const;
 
-	const FString& GetPlayerSessionId()const;
+	UFUNCTION(BlueprintCallable)
+		const PLAYER_STATE& GetPlayerState()const;
+
+	UFUNCTION(BlueprintCallable)
+		void SetPlayerState(const PLAYER_STATE& playerstate);
 
 	bool CheckTeamName(const FString& teamName);
 
@@ -41,4 +56,7 @@ private:
 
 	UPROPERTY(replicated)
 		FString team_;
+
+	UPROPERTY()
+		PLAYER_STATE playerState_;
 };

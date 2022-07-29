@@ -7,7 +7,7 @@
 
 AUnrealFpsGamePlayerState::AUnrealFpsGamePlayerState()
 {
-
+	playerState_ = PLAYER_STATE::NON;
 }
 
 void AUnrealFpsGamePlayerState::SetPlayerTeamType(const FString& teamName)
@@ -37,9 +37,19 @@ const FString& AUnrealFpsGamePlayerState::GetTeamString() const
 	return team_;
 }
 
+const PLAYER_STATE& AUnrealFpsGamePlayerState::GetPlayerState() const
+{
+	return playerState_;
+}
+
 const FString& AUnrealFpsGamePlayerState::GetPlayerSessionId() const
 {
 	return playerSessionId_;
+}
+
+void AUnrealFpsGamePlayerState::SetPlayerState(const PLAYER_STATE& playerstate)
+{
+	playerState_ = playerstate;
 }
 
 bool AUnrealFpsGamePlayerState::CheckTeamName(const FString& teamName)
