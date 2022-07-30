@@ -105,6 +105,8 @@ protected:
 		APlayerController* newPlayerController, const FUniqueNetIdRepl& uniqueId, const FString& options, const FString& portal
 	)override;
 
+	UFUNCTION(Category = Game)
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 
 private:
 	FHttpModule* httpModule_;

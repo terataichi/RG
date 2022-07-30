@@ -18,7 +18,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Json.h"
 #include "JsonUtilities.h"
-
+#include "GameFramework/PlayerStart.h"
 
 namespace
 {
@@ -161,25 +161,25 @@ FString AFpsGameMode::InitNewPlayer(APlayerController* newPlayerController, cons
 	FString initialiizedString = Super::InitNewPlayer(newPlayerController, uniqueId, options, portal);
 
 	// server未接続時テスト用コード
-	/*if (newPlayerController == nullptr)
-	{
-		return initialiizedString;
-	}
+	//if (newPlayerController == nullptr)
+	//{
+	//	return initialiizedString;
+	//}
 
-	APlayerState* playerState = newPlayerController->PlayerState;
+	//APlayerState* playerState = newPlayerController->PlayerState;
 
-	if (playerState == nullptr)
-	{
-		return initialiizedString;
-	}
+	//if (playerState == nullptr)
+	//{
+	//	return initialiizedString;
+	//}
 
-	AUnrealFpsGamePlayerState* fpsPlayerState = Cast<AUnrealFpsGamePlayerState>(playerState);
+	//AUnrealFpsGamePlayerState* fpsPlayerState = Cast<AUnrealFpsGamePlayerState>(playerState);
 
-	if (fpsPlayerState == nullptr)
-	{
-		return initialiizedString;
-	}
-	fpsPlayerState->SetPlayerTeamType(ETeamType::GetRandomTeamType2String());*/
+	//if (fpsPlayerState == nullptr)
+	//{
+	//	return initialiizedString;
+	//}
+	//fpsPlayerState->SetPlayerTeamType(ETeamType::GetRandomTeamType2String());
 
 #if WITH_GAMELIFT
 	const FString& playerSessionId = UGameplayStatics::ParseOption(options, "PlayerSessionId");
@@ -220,6 +220,45 @@ FString AFpsGameMode::InitNewPlayer(APlayerController* newPlayerController, cons
 	fpsGamePlayerState->SetPlayerTeamType(team);
 #endif
 	return initialiizedString;
+}
+
+AActor* AFpsGameMode::ChoosePlayerStart_Implementation(AController* Player)
+{
+	// チーム情報が欲しいのでプレイヤーステートをもらう
+	AUnrealFpsGamePlayerState* state = Player->GetPlayerState<AUnrealFpsGamePlayerState>();
+	if (state == nullptr)
+	{
+		check(!"ChoosePlayerStart_Implementation");
+		return nullptr;
+	}
+
+	auto str = state->GetTeamString();
+	FName ConvertedFString = FName(*str);
+
+	TSubclassOf<APlayerStart> FindClass;
+	FindClass = APlayerStart::StaticClass();
+
+	// ワールド内のチームタグと同じプレイヤースタートを探す
+	TArray<AActor*> FindPlayerStart;
+	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), FindClass, ConvertedFString, FindPlayerStart);
+
+	// サイズチェック
+	if (FindPlayerStart.Num() != 1)
+	{
+		//check(!"ChoosePlayerStart_Implementation : Size 0");
+		return nullptr;
+	}
+
+	// １つしか置いてないはずなのでないと思うが一応回してあれば返す
+	for (auto playerStart : FindPlayerStart)
+	{
+		if (playerStart != nullptr)
+		{
+			return playerStart;
+		}
+	}
+
+	return nullptr;
 }
 
 void AFpsGameMode::AWSGameInit()
