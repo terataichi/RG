@@ -8,6 +8,7 @@
 AUnrealFpsGamePlayerState::AUnrealFpsGamePlayerState()
 {
 	playerState_ = PLAYER_STATE::NON;
+	team_ = "NON";
 }
 
 void AUnrealFpsGamePlayerState::SetPlayerTeamType(const FString& teamName)

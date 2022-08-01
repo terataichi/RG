@@ -37,3 +37,9 @@ const FString& AUnrealFpsGameGameState::GetWinningTeam() const
 {
 	return winningTeam_;
 }
+
+void AUnrealFpsGameGameState::SetWinTeam(const FString& winningTeam)
+{
+	SetLatestEvent(TEXT("GameEnded"));
+	SetWinningTeam(winningTeam);
+}

@@ -23,25 +23,10 @@ protected:
 
 private:
 	UPROPERTY()
-		UTextBlock* teamNameTextBlock_;
-
-	UPROPERTY()
-		UTextBlock* teammateCountTextBlock_;
-
-	UPROPERTY()
 		UTextBlock* eventTextBlock_;
-
-	UPROPERTY()
-		UTextBlock* pingTextBlock_;
-
-	UFUNCTION()
-		void SetTeammateCount();
 
 	UFUNCTION()
 		void SetLatesEvent();
-
-	UFUNCTION()
-		void SetAveragePlayerLatency();
 
 
 	void InitTextBlocks();
@@ -52,11 +37,5 @@ private:
 	FString GetOwingPlayerTeamName();
 
 	UPROPERTY()
-		FTimerHandle teammateCountHandle_;
-
-	UPROPERTY()
 		FTimerHandle latesEventHandle_;
-
-	UPROPERTY()
-		FTimerHandle averagePlayerLatencyHandle_;
 };

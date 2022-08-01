@@ -26,37 +26,6 @@ void UUnrealFpsGameWidget::NativeDestruct()
 	UUserWidget::NativeDestruct();
 }
 
-void UUnrealFpsGameWidget::SetTeammateCount()
-{
-	FString owningPlayerTeam = GetOwingPlayerTeamName();
-	teamNameTextBlock_->SetText(FText::FromString("Team Name: " + owningPlayerTeam));
-
-	TArray<APlayerState*> playerStates = GetWorld()->GetGameState()->PlayerArray;
-
-	int teammateCount = 0;
-
-	for (const auto& playerState: playerStates)
-	{
-		if (playerState == nullptr)
-		{
-			continue;
-		}
-		AUnrealFpsGamePlayerState* fpsGameState = Cast<AUnrealFpsGamePlayerState>(playerState);
-		if (fpsGameState == nullptr)
-		{
-			continue;
-		}
-		if (fpsGameState->CheckTeamName(owningPlayerTeam))
-		{
-			teammateCount++;
-		}
-	}
-
-	teammateCountTextBlock_->SetText(FText::FromString("Teammate Count: " + FString::FromInt(teammateCount)));
-
-
-
-}
 
 void UUnrealFpsGameWidget::SetLatesEvent()
 {
@@ -106,52 +75,23 @@ void UUnrealFpsGameWidget::SetLatesEvent()
 
 }
 
-void UUnrealFpsGameWidget::SetAveragePlayerLatency()
-{
-	UGameInstance* gameInstance = GetGameInstance();
-	if (gameInstance == nullptr)
-	{
-		check(!"gameInstance‚ªnullptr");
-		return;
-	}
-
-	UUnrealFpsGameInstance* fpsGameInstance = Cast<UUnrealFpsGameInstance>(gameInstance);
-
-	if (fpsGameInstance == nullptr)
-	{
-		check(!"fpsGameInstance‚ªnullptr");
-		return;
-	}
-
-	float playerLatency = LatencyRecorder::GetAveragePlayerLatency(fpsGameInstance);
-	FString pingString = "Ping: " + FString::FromInt(FMath::RoundToInt(playerLatency)) + "ms";
-	pingTextBlock_->SetText(FText::FromString(pingString));
-}
 
 void UUnrealFpsGameWidget::InitTextBlocks()
 {
-	teamNameTextBlock_ = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_TeamName")));
-	teammateCountTextBlock_ = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_TeammateCount")));
 	eventTextBlock_ = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_Event")));
-	pingTextBlock_ = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_Ping")));
 }
 
 void UUnrealFpsGameWidget::InitTimers()
 {
 	auto& timerManager = GetWorld()->GetTimerManager();
-
-	timerManager.SetTimer(teammateCountHandle_, this, &UUnrealFpsGameWidget::SetTeammateCount, 1.0f, true, 1.0f);
 	timerManager.SetTimer(latesEventHandle_, this, &UUnrealFpsGameWidget::SetLatesEvent, 1.0, true, 1.0f);
-	timerManager.SetTimer(averagePlayerLatencyHandle_, this, &UUnrealFpsGameWidget::SetAveragePlayerLatency, 1.0f, true, 1.0f);
 }
 
 void UUnrealFpsGameWidget::ClearTimers()
 {
 	auto& timerManager = GetWorld()->GetTimerManager();
 
-	timerManager.ClearTimer(teammateCountHandle_);
 	timerManager.ClearTimer(latesEventHandle_);
-	timerManager.ClearTimer(averagePlayerLatencyHandle_);
 }
 
 FString UUnrealFpsGameWidget::GetOwingPlayerTeamName()

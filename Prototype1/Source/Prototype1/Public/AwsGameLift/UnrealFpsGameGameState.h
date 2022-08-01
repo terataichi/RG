@@ -24,6 +24,10 @@ public:
 	const FString& GetLatesEvent()const;
 	const FString& GetWinningTeam()const;
 
+
+	UFUNCTION(BlueprintCallable)
+		void SetWinTeam(const FString& winningTeam);
+
 private:
 	UPROPERTY(replicated)
 		FString latestEvent_;
