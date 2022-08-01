@@ -51,6 +51,10 @@ AFpsGameMode::AFpsGameMode()
 
 }
 
+AFpsGameMode::~AFpsGameMode()
+{
+}
+
 void AFpsGameMode::PreLogin(const FString& option, const FString& address, const FUniqueNetIdRepl& uniqueId, FString& errorMessage)
 {
 	auto errorFunc = [](FString& errorMessage) {

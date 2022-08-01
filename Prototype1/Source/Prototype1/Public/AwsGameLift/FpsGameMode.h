@@ -76,6 +76,7 @@ class PROTOTYPE1_API AFpsGameMode : public AGameModeBase
 	GENERATED_BODY()
 public:
 	AFpsGameMode();
+	~AFpsGameMode();
 
 	virtual void PreLogin(const FString& option, const FString& address, const FUniqueNetIdRepl& uniqueId, FString& errorMessage)override;
 
