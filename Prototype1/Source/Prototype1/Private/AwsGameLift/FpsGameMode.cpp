@@ -36,6 +36,13 @@ AFpsGameMode::AFpsGameMode()
 		return;
 	}
 	DefaultPawnClass = PlayerPawnClassFinder.Class;
+	static ConstructorHelpers::FClassFinder<AController> playerController(TEXT("/Game/Blueprints/MyMIPlayerController.MyMIPlayerController"));
+	if (playerController.Class == nullptr)
+	{
+		check(!"playerControllerClass‚ªnullptr");
+		return;
+	}
+	PlayerControllerClass = playerController.Class;
 	HUDClass = AMyFPSHUD::StaticClass();
 	PlayerStateClass = AUnrealFpsGamePlayerState::StaticClass();
 	GameStateClass = AUnrealFpsGameGameState::StaticClass();
