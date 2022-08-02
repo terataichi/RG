@@ -142,6 +142,7 @@ void AStageMain::DrawSpace(const int32& spaceNum, AActor* Obj, const float& z)
 	// デバッグ描画
 	//UKismetSystemLibrary::DrawDebugSphere(GetWorld(), impactPoint, 30.0f, 12, col);
 	previewObj_->SetActorLocation(drawPos + this->GetActorLocation());
+	previewObj_->SetActorRotation(Obj->GetActorRotation());
 
 	//UKismetSystemLibrary::DrawDebugBox(GetWorld(), drawPos + this->GetActorLocation(), divSize_ / 2.0f, col);
 }
