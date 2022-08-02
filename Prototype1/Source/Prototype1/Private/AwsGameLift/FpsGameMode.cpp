@@ -36,7 +36,7 @@ AFpsGameMode::AFpsGameMode()
 		return;
 	}
 	DefaultPawnClass = PlayerPawnClassFinder.Class;
-	static ConstructorHelpers::FClassFinder<AController> playerController(TEXT("/Game/Blueprints/MyMIPlayerController.MyMIPlayerController"));
+	static ConstructorHelpers::FClassFinder<AController> playerController(TEXT("/Game/Blueprints/MyMIPlayerController"));
 	if (playerController.Class == nullptr)
 	{
 		check(!"playerControllerClass‚ªnullptr");
