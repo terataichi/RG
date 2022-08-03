@@ -76,7 +76,7 @@ void AFpsGameMode::PreLogin(const FString& option, const FString& address, const
 	}
 
 	const FString& playerSessionId = UGameplayStatics::ParseOption(option, "PlayerSessionId");
-	const FString& playerId = UGameplayStatics::ParseOption(option, "playerId");
+	const FString& playerId = UGameplayStatics::ParseOption(option, "PlayerId");
 	if (playerSessionId.Len() <= 0 || playerId.Len() <= 0)
 	{
 		errorFunc(errorMessage);
